@@ -21,7 +21,8 @@ import { clearCartRemote } from "../../redux/slices/cartSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+;
 
 // useFormik will be moved inside the Checkout component below
 

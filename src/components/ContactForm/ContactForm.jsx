@@ -26,22 +26,21 @@ const ContactForm = () => {
     onSubmit: async (values, { resetForm }) => {
       setSending(true);
 
-      try {
-        const res = await axios.post("http://localhost:5000/api/contact", values);
+try {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const res = await axios.post(`${API_BASE_URL}/contact`, values);
 
-if (res.status === 200) {
-  toast.success("¡Mensaje enviado con éxito 🎉!");
-  resetForm();
-} else {
-  throw new Error("Fallo en el servidor");
-}
-
-      } 
-
-catch (error) {
+  if (res.status === 200) {
+    toast.success("¡Mensaje enviado con éxito 🎉!");
+    resetForm();
+  } else {
+    throw new Error("Fallo en el servidor");
+  }
+} catch (error) {
   console.error("Error al enviar el mensaje:", error);
   toast.error("Error al enviar el mensaje. Intenta nuevamente.");
 }
+
 
 
       setSending(false);
