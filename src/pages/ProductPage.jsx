@@ -1,11 +1,7 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addItemToCart,
-  addToCartLocal
-} from "../redux/slices/cartSlice";
-
+import { addItemToCart, addToCartLocal } from "../redux/slices/cartSlice";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -16,8 +12,6 @@ const ProductPage = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-
-
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState(null);
   const [quantity, setQuantity] = useState(1);
@@ -28,15 +22,23 @@ const ProductPage = () => {
     const fetchProduct = async () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        const res = await fetch(`${API_BASE_URL}/products/${id}`);
+        const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
+        const res = await fetch(`${API_BASE_URL}/products/${id}`);
         const data = await res.json();
-        setProduct(data);
-        setMainImage(data.images?.[0]?.url || null);
+
+        const enrichedImages = data.images.map(img => ({
+          ...img,
+          fullUrl: IMAGE_BASE_URL + img.url
+        }));
+
+        setProduct({ ...data, images: enrichedImages });
+        setMainImage(enrichedImages?.[0]?.fullUrl || IMAGE_BASE_URL + "placeholder.jpg");
       } catch (error) {
         console.error("Error al obtener el producto:", error);
       }
     };
+
     fetchProduct();
   }, [id]);
 
@@ -51,18 +53,14 @@ const ProductPage = () => {
   const handleIncrease = () => setQuantity((prev) => prev + 1);
   const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-const handleAddToCart = () => {
-  if (user) {
-    dispatch(addItemToCart({ userId: user.id, productId: product.id, quantity }));
-  } else {
-    dispatch(addToCartLocal({ product, quantity }));
-  }
-
-  toast.success(`${quantity} × ${product.name} agregado al carrito`, {
-    icon: "🛒",
-  });
-};
-
+  const handleAddToCart = () => {
+    if (user) {
+      dispatch(addItemToCart({ userId: user.id, productId: product.id, quantity }));
+    } else {
+      dispatch(addToCartLocal({ product, quantity }));
+    }
+    toast.success(`${quantity} × ${product.name} agregado al carrito`, { icon: "🛒" });
+  };
 
   const buttonStyle = {
     cursor: "pointer",
@@ -102,33 +100,32 @@ const handleAddToCart = () => {
         alignItems: isMobile576 ? "center" : "flex-start",
       }}
     >
-{/* Miniaturas */}
-<div
-  style={{
-    display: "flex",
-    flexDirection: isMobile576 ? "row" : "column",
-    gap: "1rem",
-    justifyContent: "center",
-    flexWrap: isMobile576 ? "wrap" : "nowrap",
-    marginBottom: isMobile576 ? "1rem" : "0",
-  }}
->
-  {product.images.map((img, i) => (
-    <img
-      key={img.id || i}
-      src={img.url}
-      alt={`Miniatura ${i + 1}`}
-      width={60}
-      style={{
-        border: mainImage === img.url ? "2px solid black" : "1px solid gray",
-        cursor: "pointer",
-        borderRadius: "5px",
-      }}
-      onClick={() => setMainImage(img.url)}
-    />
-  ))}
-</div>
-
+      {/* Miniaturas */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: isMobile576 ? "row" : "column",
+          gap: "1rem",
+          justifyContent: "center",
+          flexWrap: isMobile576 ? "wrap" : "nowrap",
+          marginBottom: isMobile576 ? "1rem" : "0",
+        }}
+      >
+        {product.images.map((img, i) => (
+          <img
+            key={img.id || i}
+            src={img.fullUrl}
+            alt={`Miniatura ${i + 1}`}
+            width={60}
+            style={{
+              border: mainImage === img.fullUrl ? "2px solid black" : "1px solid gray",
+              cursor: "pointer",
+              borderRadius: "5px",
+            }}
+            onClick={() => setMainImage(img.fullUrl)}
+          />
+        ))}
+      </div>
 
       {/* Imagen principal y detalles */}
       <div
@@ -162,7 +159,6 @@ const handleAddToCart = () => {
         </Swiper>
 
         <h1 style={{ fontWeight: 500, fontSize: "1.9rem" }}>{product.name}</h1>
-
         <p
           style={{
             fontSize: "1.2rem",
@@ -173,7 +169,6 @@ const handleAddToCart = () => {
         >
           {product.description}
         </p>
-
         <p
           style={{
             fontWeight: 500,
@@ -208,7 +203,6 @@ const handleAddToCart = () => {
           >
             −
           </button>
-
           <input
             type="number"
             readOnly
@@ -224,7 +218,6 @@ const handleAddToCart = () => {
               userSelect: "none",
             }}
           />
-
           <button
             onClick={handleIncrease}
             style={qtyButtonStyle(hoveredButton === "increase")}
@@ -233,7 +226,6 @@ const handleAddToCart = () => {
           >
             +
           </button>
-
           <button
             onClick={handleAddToCart}
             style={addButtonStyle(hoveredButton === "add")}
