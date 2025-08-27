@@ -21,16 +21,22 @@ const ProductView = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Cargar productos desde el backend
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+        const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
         const res = await fetch(`${API_BASE_URL}/products`);
-
         const data = await res.json();
+
         if (data?.products) {
-          setProducts(data.products);
+          const enriched = data.products.map((p) => ({
+            ...p,
+            imageUrl: p.images?.[0]?.url
+              ? IMAGE_BASE_URL + p.images[0].url
+              : IMAGE_BASE_URL + "placeholder.jpg",
+          }));
+          setProducts(enriched);
         }
       } catch (error) {
         console.error("Error al cargar productos:", error);
@@ -56,18 +62,11 @@ const ProductView = () => {
     );
   };
 
-  const handleOpenModal = (product) => {
-    setModalProduct(product);
-  };
+  const handleOpenModal = (product) => setModalProduct(product);
+  const handleCloseModal = () => setModalProduct(null);
 
-  const handleCloseModal = () => {
-    setModalProduct(null);
-  };
-
-  // ✅ Extraer nombres de categorías únicas
   const allCategories = [...new Set(products.map((p) => p.category.name))];
 
-  // ✅ Filtrar productos por categoría seleccionada
   const filteredProducts =
     selectedCategories.length > 0
       ? products.filter((p) => selectedCategories.includes(p.category.name))
@@ -94,7 +93,7 @@ const ProductView = () => {
               key={product.id}
               name={product.name}
               price={product.price}
-              image={product.images[0]?.url || ""}
+              image={product.imageUrl}
               category={product.category.name}
               onClick={() => handleOpenModal(product)}
             />
@@ -110,4 +109,5 @@ const ProductView = () => {
 };
 
 export default ProductView;
+
 

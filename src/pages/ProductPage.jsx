@@ -23,7 +23,6 @@ const ProductPage = () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
-
         const res = await fetch(`${API_BASE_URL}/products/${id}`);
         const data = await res.json();
 
@@ -50,8 +49,8 @@ const ProductPage = () => {
 
   if (!product) return <p style={{ padding: "2rem" }}>Cargando producto...</p>;
 
-  const handleIncrease = () => setQuantity((prev) => prev + 1);
-  const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+  const handleIncrease = () => setQuantity(prev => prev + 1);
+  const handleDecrease = () => setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = () => {
     if (user) {
@@ -90,27 +89,23 @@ const ProductPage = () => {
   const isTablet768 = windowWidth <= 768;
 
   return (
-    <div
-      style={{
-        display: isMobile576 ? "block" : "flex",
-        gap: "2rem",
-        padding: "2rem",
-        paddingTop: "4rem",
-        justifyContent: "center",
-        alignItems: isMobile576 ? "center" : "flex-start",
-      }}
-    >
+    <div style={{
+      display: isMobile576 ? "block" : "flex",
+      gap: "2rem",
+      padding: "2rem",
+      paddingTop: "4rem",
+      justifyContent: "center",
+      alignItems: isMobile576 ? "center" : "flex-start",
+    }}>
       {/* Miniaturas */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: isMobile576 ? "row" : "column",
-          gap: "1rem",
-          justifyContent: "center",
-          flexWrap: isMobile576 ? "wrap" : "nowrap",
-          marginBottom: isMobile576 ? "1rem" : "0",
-        }}
-      >
+      <div style={{
+        display: "flex",
+        flexDirection: isMobile576 ? "row" : "column",
+        gap: "1rem",
+        justifyContent: "center",
+        flexWrap: isMobile576 ? "wrap" : "nowrap",
+        marginBottom: isMobile576 ? "1rem" : "0",
+      }}>
         {product.images.map((img, i) => (
           <img
             key={img.id || i}
@@ -128,14 +123,12 @@ const ProductPage = () => {
       </div>
 
       {/* Imagen principal y detalles */}
-      <div
-        style={{
-          flex: 1,
-          maxWidth: isTablet768 ? "300px" : "600px",
-          margin: "0 auto",
-          textAlign: isMobile576 ? "center" : "left",
-        }}
-      >
+      <div style={{
+        flex: 1,
+        maxWidth: isTablet768 ? "300px" : "600px",
+        margin: "0 auto",
+        textAlign: isMobile576 ? "center" : "left",
+      }}>
         <Swiper
           modules={[Navigation]}
           navigation
@@ -159,37 +152,27 @@ const ProductPage = () => {
         </Swiper>
 
         <h1 style={{ fontWeight: 500, fontSize: "1.9rem" }}>{product.name}</h1>
-        <p
-          style={{
-            fontSize: "1.2rem",
-            color: "#666",
-            marginBottom: "2rem",
-            marginTop: "2rem",
-          }}
-        >
-          {product.description}
-        </p>
-        <p
-          style={{
-            fontWeight: 500,
-            fontSize: "1.5rem",
-            color: "#007bff",
-            marginBottom: "20px",
-          }}
-        >
-          ${product.price}
-        </p>
+        <p style={{
+          fontSize: "1.2rem",
+          color: "#666",
+          marginBottom: "2rem",
+          marginTop: "2rem",
+        }}>{product.description}</p>
+        <p style={{
+          fontWeight: 500,
+          fontSize: "1.5rem",
+          color: "#007bff",
+          marginBottom: "20px",
+        }}>${product.price}</p>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "1rem",
-            marginTop: "1rem",
-            justifyContent: isMobile576 ? "center" : "flex-start",
-            flexWrap: "wrap",
-          }}
-        >
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "1rem",
+          marginTop: "1rem",
+          justifyContent: isMobile576 ? "center" : "flex-start",
+          flexWrap: "wrap",
+        }}>
           <button
             onClick={handleDecrease}
             disabled={quantity <= 1}
@@ -200,9 +183,8 @@ const ProductPage = () => {
             }}
             onMouseEnter={() => setHoveredButton("decrease")}
             onMouseLeave={() => setHoveredButton(null)}
-          >
-            −
-          </button>
+          >−</button>
+
           <input
             type="number"
             readOnly
@@ -218,22 +200,20 @@ const ProductPage = () => {
               userSelect: "none",
             }}
           />
+
           <button
             onClick={handleIncrease}
             style={qtyButtonStyle(hoveredButton === "increase")}
             onMouseEnter={() => setHoveredButton("increase")}
             onMouseLeave={() => setHoveredButton(null)}
-          >
-            +
-          </button>
+          >+</button>
+
           <button
             onClick={handleAddToCart}
             style={addButtonStyle(hoveredButton === "add")}
             onMouseEnter={() => setHoveredButton("add")}
             onMouseLeave={() => setHoveredButton(null)}
-          >
-            Agregar al carrito
-          </button>
+          >Agregar al carrito</button>
         </div>
       </div>
     </div>
