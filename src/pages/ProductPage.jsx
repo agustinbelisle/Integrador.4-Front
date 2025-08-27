@@ -22,17 +22,17 @@ const ProductPage = () => {
     const fetchProduct = async () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
         const res = await fetch(`${API_BASE_URL}/products/${id}`);
         const data = await res.json();
 
+        // ✅ usamos directamente las URLs del backend
         const enrichedImages = data.images.map(img => ({
           ...img,
-          fullUrl: IMAGE_BASE_URL + img.url
+          fullUrl: img.url
         }));
 
         setProduct({ ...data, images: enrichedImages });
-        setMainImage(enrichedImages?.[0]?.fullUrl || IMAGE_BASE_URL + "placeholder.jpg");
+        setMainImage(enrichedImages?.[0]?.fullUrl || "/placeholder.jpg");
       } catch (error) {
         console.error("Error al obtener el producto:", error);
       }

@@ -1,16 +1,21 @@
+// src/components/CardProduct.jsx
 import { Card } from "./CardProductStyles";
 
-const CardProduct = ({ name, price, image, onClick }) => {
+const CardProduct = ({ name, price, images, onClick }) => {
   const imageBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
+  // 👉 Obtener la primera imagen disponible
   const getImageUrl = () => {
-    if (typeof image === "string") {
-      return imageBaseUrl + image;
+    if (!images || images.length === 0) {
+      return `${imageBaseUrl}placeholder.jpg`;
     }
-    if (image?.url) {
-      return imageBaseUrl + image.url;
+    if (typeof images[0] === "string") {
+      return imageBaseUrl + images[0];
     }
-    return imageBaseUrl + "placeholder.jpg";
+    if (images[0]?.url) {
+      return imageBaseUrl + images[0].url;
+    }
+    return `${imageBaseUrl}placeholder.jpg`;
   };
 
   const imageUrl = getImageUrl();
@@ -30,7 +35,9 @@ const CardProduct = ({ name, price, image, onClick }) => {
       />
       <div className="info" style={{ padding: "0.8rem", textAlign: "center" }}>
         <h3 style={{ margin: "0.5rem 0", fontSize: "1.2rem" }}>{name}</h3>
-        <span style={{ color: "#007bff", fontWeight: "500" }}>${price}</span>
+        <span style={{ color: "#007bff", fontWeight: "500" }}>
+          ${price.toLocaleString("es-AR")}
+        </span>
       </div>
     </Card>
   );
