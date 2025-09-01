@@ -10,7 +10,6 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 // Leer estado guardado (para mantener sesión)
 const getAuthStateFromStorage = () => {
   const state = localStorage.getItem(AUTH_STATE_KEY);
-
   if (!state) {
     return { isAuthenticated: false, user: null, token: null, error: null };
   }
@@ -19,25 +18,28 @@ const getAuthStateFromStorage = () => {
     const parsed = JSON.parse(state);
     const decoded = jwtDecode(parsed.token);
 
-    const isExpired = Date.now() >= decoded.exp * 1000;
+    // Validación extra de estructura
+    if (!decoded || !decoded.exp || !decoded.id || !decoded.email || !decoded.role) {
+      console.warn("Token malformado. Cerrando sesión.");
+      localStorage.removeItem(AUTH_STATE_KEY);
+      return { isAuthenticated: false, user: null, token: null, error: "Token inválido. Iniciá sesión nuevamente." };
+    }
 
+    const isExpired = Date.now() >= decoded.exp * 1000;
     if (isExpired) {
       console.warn("Token expirado. Cerrando sesión automáticamente.");
       localStorage.removeItem(AUTH_STATE_KEY);
-      return {
-        isAuthenticated: false,
-        user: null,
-        token: null,
-        error: "Sesión expirada. Iniciá sesión nuevamente.",
-      };
+      return { isAuthenticated: false, user: null, token: null, error: "Sesión expirada. Iniciá sesión nuevamente." };
     }
 
     return parsed;
   } catch (err) {
     console.error("Error al decodificar el token:", err);
+    localStorage.removeItem(AUTH_STATE_KEY);
     return { isAuthenticated: false, user: null, token: null, error: null };
   }
 };
+
 
 
 // Guardar sesión
