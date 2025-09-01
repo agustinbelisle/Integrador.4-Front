@@ -32,11 +32,15 @@ const Cart = () => {
   const { cartItems, loading, error } = useSelector((state) => state.cart);
 
 useEffect(() => {
-  if (isAuthenticated && user && token) {
-    console.log("User en Cart.jsx:", user); // 👈 Agregá esta línea
+  if (isAuthenticated && user?.id && token) {
+    console.log("Token enviado desde Cart.jsx:", token);
+    console.log("User ID:", user.id);
     dispatch(fetchCart({ userId: user.id, token }));
+  } else {
+    console.warn("No se puede cargar el carrito: token o user.id indefinido");
   }
 }, [dispatch, isAuthenticated, user, token]);
+
 
 
   const handleAdd = (productId) => {
