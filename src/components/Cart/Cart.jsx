@@ -31,11 +31,13 @@ const Cart = () => {
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
   const { cartItems, loading, error } = useSelector((state) => state.cart);
 
-  useEffect(() => {
-    if (isAuthenticated && user && token) {
-      dispatch(fetchCart({ userId: user.id, token }));
-    }
-  }, [dispatch, isAuthenticated, user, token]);
+useEffect(() => {
+  if (isAuthenticated && user && token) {
+    console.log("User en Cart.jsx:", user); // 👈 Agregá esta línea
+    dispatch(fetchCart({ userId: user.id, token }));
+  }
+}, [dispatch, isAuthenticated, user, token]);
+
 
   const handleAdd = (productId) => {
     dispatch(addItemToCart({ userId: user.id, productId, quantity: 1, token }));
