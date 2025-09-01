@@ -69,7 +69,11 @@ const Cart = () => {
     }
   };
 
-  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = cartItems.reduce((acc, item) => {
+  const price = item.product?.price || 0;
+  return acc + price * item.quantity;
+}, 0);
+
 
   return (
     <CartContainer>
@@ -83,20 +87,24 @@ const Cart = () => {
       {!loading && cartItems.length > 0 && (
         <>
           <ProductList>
-            {cartItems.map((item) => (
-              <ProductItem key={item.itemId}>
+          {cartItems.map((item) => {
+            const name = item.product?.name || "Producto sin nombre";
+            const price = item.product?.price || 0;
+            return (
+              <ProductItem key={item.itemId || item.id}>
                 <ProductInfo>
-                  {item.name}
+                  {name}
                   <Quantity>
                     <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
                     {item.quantity}
                     <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
                   </Quantity>
                 </ProductInfo>
-
                 <RemoveButton onClick={() => handleRemoveProduct(item)}>Eliminar</RemoveButton>
               </ProductItem>
-            ))}
+            );
+          })}
+
           </ProductList>
 
           <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
