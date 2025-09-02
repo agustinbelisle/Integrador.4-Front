@@ -27,13 +27,34 @@ export const ProductList = styled.ul`
 
 export const ProductItem = styled.li`
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 15px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fafafa;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+`;
+
+export const ProductImage = styled.img`
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-right: 12px;
+  flex-shrink: 0;
 `;
 
 export const ProductInfo = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Exo 2 Bold', sans-serif;
+  color: #333;
+
+  span {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
 `;
 
 export const Quantity = styled.div`
@@ -68,7 +89,6 @@ export const QuantityButton = styled.button`
   }
 `;
 
-
 export const RemoveButton = styled.button`
   background-color: rgba(240, 192, 64, 0.85);
   border: none;
@@ -93,7 +113,6 @@ export const RemoveButton = styled.button`
     transform: scale(0.96);
   }
 `;
-
 
 export const TotalAmount = styled.p`
   font-size: 1.2rem;
