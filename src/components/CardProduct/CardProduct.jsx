@@ -8,24 +8,27 @@ const CardProduct = ({ name, price, image, images, onClick }) => {
   const getImageUrl = () => {
     // Si viene un string directo (prop image)
     if (image) {
-      return image;
+      // Si la URL ya es completa (http/https), usarla tal cual
+      if (image.startsWith("http")) return image;
+      return imageBaseUrl + image;
     }
 
     // Si viene un array de imágenes
     if (images && images.length > 0) {
-      if (typeof images[0] === "string") {
-        return imageBaseUrl + images[0];
-      }
-      if (images[0]?.url) {
-        return imageBaseUrl + images[0].url;
+      const first = images[0];
+      if (typeof first === "string") return imageBaseUrl + first;
+      if (first?.url) {
+        if (first.url.startsWith("http")) return first.url;
+        return imageBaseUrl + first.url;
       }
     }
 
-    // Fallback
+    // Fallback a placeholder
     return `${imageBaseUrl}placeholder.jpg`;
   };
 
   const imageUrl = getImageUrl();
+  console.log("CardProduct imageUrl:", imageUrl); // Para depuración
 
   return (
     <Card onClick={onClick}>
