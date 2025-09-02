@@ -1,4 +1,3 @@
-// src/components/ProductView/ProductView.jsx
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import SidebarCategories from "../SidebarCategories/SidebarCategories";
@@ -32,12 +31,13 @@ const ProductView = () => {
         const data = await res.json();
 
         if (data?.products) {
-          const enriched = data.products.map((p) => ({
-            ...p,
-            imageUrl: p.images?.[0]?.url
-              ? IMAGE_BASE_URL + p.images[0].url
-              : IMAGE_BASE_URL + "placeholder.jpg",
-          }));
+          const enriched = data.products.map((p) => {
+            const url = p.images?.[0]?.url || "placeholder.jpg";
+            return {
+              ...p,
+              imageUrl: url.startsWith("http") ? url : IMAGE_BASE_URL + url,
+            };
+          });
           setProducts(enriched);
         }
       } catch (error) {
@@ -111,6 +111,3 @@ const ProductView = () => {
 };
 
 export default ProductView;
-
-
-

@@ -1,4 +1,3 @@
-// src/components/FeaturedProducts/FeaturedProducts.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CardProduct from "../CardProduct/CardProduct";
@@ -31,14 +30,15 @@ const FeaturedProducts = () => {
             )
           );
 
-          const enriched = filtered.map((p) => ({
-            ...p,
-            imageUrl: p.images?.[0]?.url
-              ? IMAGE_BASE_URL + p.images[0].url
-              : IMAGE_BASE_URL + "placeholder.jpg",
-          }));
+          const enriched = filtered.map((p) => {
+            const url = p.images?.[0]?.url || "placeholder.jpg";
+            return {
+              ...p,
+              imageUrl: url.startsWith("http") ? url : IMAGE_BASE_URL + url,
+            };
+          });
 
-          setProducts(enriched.slice(0, 4)); // primeros 4 destacados
+          setProducts(enriched.slice(0, 4));
         }
       } catch (error) {
         console.error("Error al cargar productos destacados:", error);

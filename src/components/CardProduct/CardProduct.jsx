@@ -4,31 +4,25 @@ import { Card } from "./CardProductStyles";
 const CardProduct = ({ name, price, image, images, onClick }) => {
   const imageBaseUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
-  // 👉 Resolver la imagen correcta
   const getImageUrl = () => {
     // Si viene un string directo (prop image)
     if (image) {
-      // Si la URL ya es completa (http/https), usarla tal cual
-      if (image.startsWith("http")) return image;
-      return imageBaseUrl + image;
+      return image.startsWith("http") ? image : imageBaseUrl + image;
     }
 
     // Si viene un array de imágenes
     if (images && images.length > 0) {
       const first = images[0];
-      if (typeof first === "string") return imageBaseUrl + first;
-      if (first?.url) {
-        if (first.url.startsWith("http")) return first.url;
-        return imageBaseUrl + first.url;
-      }
+      if (typeof first === "string") return first.startsWith("http") ? first : imageBaseUrl + first;
+      if (first?.url) return first.url.startsWith("http") ? first.url : imageBaseUrl + first.url;
     }
 
-    // Fallback a placeholder
+    // Fallback
     return `${imageBaseUrl}placeholder.jpg`;
   };
 
   const imageUrl = getImageUrl();
-  console.log("CardProduct imageUrl:", imageUrl); // Para depuración
+  // console.log("CardProduct imageUrl:", imageUrl); // opcional para depuración
 
   return (
     <Card onClick={onClick}>
@@ -54,3 +48,4 @@ const CardProduct = ({ name, price, image, images, onClick }) => {
 };
 
 export default CardProduct;
+
