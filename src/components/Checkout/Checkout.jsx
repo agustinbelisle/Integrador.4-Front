@@ -1,3 +1,4 @@
+// src/pages/Checkout.jsx
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -51,7 +52,10 @@ const Checkout = () => {
     if (!user || !token) navigate("/login");
   }, [user, token, navigate]);
 
-  const total = cartItems.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0);
+  const total = cartItems.reduce(
+    (acc, item) => acc + (item.price || 0) * item.quantity,
+    0
+  );
   const isCardMethod = paymentMethod === "visa" || paymentMethod === "mastercard";
 
   const handleConfirm = async () => {
@@ -62,6 +66,7 @@ const Checkout = () => {
         if (Object.keys(errors).length > 0) return;
       }
 
+      // Crear la orden
       const orderRes = await fetch(`${API_BASE_URL}/orders/${user.id}`, {
         method: "POST",
         headers: {
@@ -70,9 +75,9 @@ const Checkout = () => {
         },
       });
       if (!orderRes.ok) throw new Error(await orderRes.text());
-
       const order = await orderRes.json();
 
+      // Registrar pago
       const paymentRes = await fetch(`${API_BASE_URL}/payments/${order.id}`, {
         method: "POST",
         headers: {
@@ -82,12 +87,25 @@ const Checkout = () => {
         body: JSON.stringify({ method: paymentMethod }),
       });
       if (!paymentRes.ok) throw new Error(await paymentRes.text());
-
       const payment = await paymentRes.json();
+
+      // Limpiar carrito
       dispatch(clearCartRemote({ userId: user.id, token }));
 
+      // Navegar a OrderSuccess con productos incluidos
       navigate("/order-success", {
-        state: { orderId: order.id, amount: payment.amount, method: payment.method },
+        state: {
+          orderId: order.id,
+          amount: payment.amount,
+          method: payment.method,
+          products: cartItems.map((item) => ({
+            id: item.itemId,
+            name: item.name,
+            quantity: item.quantity,
+            price: item.price,
+            image: item.image,
+          })),
+        },
       });
     } catch (error) {
       console.error("Error durante el checkout:", error);
@@ -115,7 +133,9 @@ const Checkout = () => {
                   <ProductImage
                     src={imageUrl}
                     alt={item.name}
-                    onError={(e) => (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)}
+                    onError={(e) =>
+                      (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)
+                    }
                     style={{
                       width: "80px",
                       height: "80px",
@@ -245,4 +265,3 @@ const Checkout = () => {
 };
 
 export default Checkout;
-
