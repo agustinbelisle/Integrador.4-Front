@@ -1,3 +1,4 @@
+// src/components/FeaturedProducts/FeaturedProducts.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import CardProduct from "../CardProduct/CardProduct";
@@ -18,14 +19,26 @@ const FeaturedProducts = () => {
     const fetchFeatured = async () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-        const res = await fetch(`${API_BASE_URL}/products`);
+        const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
+        const res = await fetch(`${API_BASE_URL}/products`);
         const data = await res.json();
+
         if (data?.products) {
-          const filtered = data.products.filter(product =>
-            ["Notebooks", "Smartphones", "Hogar", "Audio"].includes(product.category.name)
+          const filtered = data.products.filter((product) =>
+            ["Notebooks", "Smartphones", "Hogar", "Audio"].includes(
+              product.category.name
+            )
           );
-          setProducts(filtered.slice(0, 4)); // primeros 4 destacados
+
+          const enriched = filtered.map((p) => ({
+            ...p,
+            imageUrl: p.images?.[0]?.url
+              ? IMAGE_BASE_URL + p.images[0].url
+              : IMAGE_BASE_URL + "placeholder.jpg",
+          }));
+
+          setProducts(enriched.slice(0, 4)); // primeros 4 destacados
         }
       } catch (error) {
         console.error("Error al cargar productos destacados:", error);
@@ -39,26 +52,21 @@ const FeaturedProducts = () => {
     <FeaturedSection>
       <Title>Productos Destacados</Title>
 
-<ProductsGrid>
-  {products.map(product => (
-    <div
-      key={product.id}
-      onClick={() => setSelectedProduct(product)}
-      style={{ cursor: "pointer" }}
-    >
-      <CardProduct
-        name={product.name}
-        price={product.price}
-        image={
-          Array.isArray(product.images) && product.images.length > 0
-            ? product.images[0]?.url
-            : "/placeholder.jpg" // imagen por defecto si falta
-        }
-      />
-    </div>
-  ))}
-</ProductsGrid>
-
+      <ProductsGrid>
+        {products.map((product) => (
+          <div
+            key={product.id}
+            onClick={() => setSelectedProduct(product)}
+            style={{ cursor: "pointer" }}
+          >
+            <CardProduct
+              name={product.name}
+              price={product.price}
+              image={product.imageUrl}
+            />
+          </div>
+        ))}
+      </ProductsGrid>
 
       <ViewMoreButton onClick={() => navigate("/products")}>
         Más productos...

@@ -1,3 +1,4 @@
+// src/components/ProductView/ProductView.jsx
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import SidebarCategories from "../SidebarCategories/SidebarCategories";
@@ -26,6 +27,7 @@ const ProductView = () => {
       try {
         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
         const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+
         const res = await fetch(`${API_BASE_URL}/products`);
         const data = await res.json();
 
@@ -109,5 +111,6 @@ const ProductView = () => {
 };
 
 export default ProductView;
+
 
 

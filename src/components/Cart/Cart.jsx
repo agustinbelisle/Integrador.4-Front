@@ -1,3 +1,4 @@
+// src/components/Cart/Cart.jsx
 import {
   CartContainer,
   ProductList,
@@ -10,6 +11,7 @@ import {
   ClearCartButton,
   CheckoutButton,
   TotalAmount,
+  ProductImage,
 } from "./CartStyles";
 
 import { useEffect } from "react";
@@ -22,6 +24,8 @@ import {
   removeItemFromCart,
   clearCartRemote,
 } from "../../redux/slices/cartSlice";
+
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -38,12 +42,24 @@ const Cart = () => {
   }, [dispatch, isAuthenticated, user, token]);
 
   const handleAddOne = (item) => {
-    dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
+    dispatch(
+      updateCartItem({
+        itemId: item.itemId,
+        quantity: item.quantity + 1,
+        token,
+      })
+    );
   };
 
   const handleRemoveOne = (item) => {
     if (item.quantity > 1) {
-      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
+      dispatch(
+        updateCartItem({
+          itemId: item.itemId,
+          quantity: item.quantity - 1,
+          token,
+        })
+      );
     } else {
       dispatch(removeItemFromCart({ itemId: item.itemId, token }));
     }
@@ -67,7 +83,10 @@ const Cart = () => {
     }
   };
 
-  const total = cartItems.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0);
+  const total = cartItems.reduce(
+    (acc, item) => acc + (item.price || 0) * item.quantity,
+    0
+  );
 
   return (
     <CartContainer>
@@ -81,26 +100,55 @@ const Cart = () => {
       {!loading && cartItems.length > 0 && (
         <>
           <ProductList>
-            {cartItems.map((item) => (
-              <ProductItem key={item.itemId}>
-                <ProductInfo>
-                  {item.name || "Producto sin nombre"}
-                  <Quantity>
-                    <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
-                    {item.quantity}
-                    <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
-                  </Quantity>
-                </ProductInfo>
-                <RemoveButton onClick={() => handleRemoveProduct(item)}>Eliminar</RemoveButton>
-              </ProductItem>
-            ))}
+            {cartItems.map((item) => {
+              const imageUrl = item.image
+                ? item.image.startsWith("http")
+                  ? item.image
+                  : `${IMAGE_BASE_URL}${item.image}`
+                : `${IMAGE_BASE_URL}placeholder.jpg`;
+
+              return (
+                <ProductItem key={item.itemId}>
+                  <ProductImage
+                    src={imageUrl}
+                    alt={item.name || "Producto"}
+                    onError={(e) =>
+                      (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)
+                    }
+                  />
+                  <ProductInfo>
+                    <strong>{item.name || "Producto sin nombre"}</strong>
+                    <br />
+                    <span style={{ color: "#007bff", fontWeight: "500" }}>
+                      ${item.price?.toFixed(2) || "0.00"}
+                    </span>
+                    <Quantity>
+                      <QuantityButton onClick={() => handleRemoveOne(item)}>
+                        -
+                      </QuantityButton>
+                      {item.quantity}
+                      <QuantityButton onClick={() => handleAddOne(item)}>
+                        +
+                      </QuantityButton>
+                    </Quantity>
+                  </ProductInfo>
+                  <RemoveButton onClick={() => handleRemoveProduct(item)}>
+                    Eliminar
+                  </RemoveButton>
+                </ProductItem>
+              );
+            })}
           </ProductList>
 
           <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
 
           <ButtonsRow>
-            <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
-            <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
+            <ClearCartButton onClick={handleClearCart}>
+              Vaciar carrito
+            </ClearCartButton>
+            <CheckoutButton onClick={handleCheckout}>
+              Ir al checkout
+            </CheckoutButton>
           </ButtonsRow>
         </>
       )}
@@ -109,3 +157,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
+
