@@ -22,8 +22,8 @@ import { clearCartRemote } from "../../redux/slices/cartSlice";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("visa");
@@ -52,7 +52,7 @@ const Checkout = () => {
     if (!user || !token) navigate("/login");
   }, [user, token, navigate]);
 
-  const total = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const total = cartItems.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0);
   const isCardMethod = paymentMethod === "visa" || paymentMethod === "mastercard";
 
   const handleConfirm = async () => {
@@ -117,9 +117,11 @@ const Checkout = () => {
           <ProductList>
             {cartItems.length === 0 && <p>Tu carrito está vacío.</p>}
             {cartItems.map((item) => {
-              const imageUrl = item.image?.startsWith("http")
-                ? item.image
-                : `${IMAGE_BASE_URL}${item.image || "placeholder.jpg"}`;
+              const imageUrl = item.image
+                ? item.image.startsWith("http")
+                  ? item.image
+                  : `${IMAGE_BASE_URL}${item.image}`
+                : `${IMAGE_BASE_URL}placeholder.jpg`;
 
               return (
                 <ProductItem key={item.itemId || item.id}>
@@ -139,7 +141,7 @@ const Checkout = () => {
                     <strong>{item.name || "Producto sin nombre"}</strong> ×{item.quantity}
                     <br />
                     <span style={{ color: "#007bff", fontWeight: "500" }}>
-                      ${item.price * item.quantity}
+                      ${((item.price || 0) * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </ProductItem>
@@ -256,4 +258,5 @@ const Checkout = () => {
 };
 
 export default Checkout;
+
 
