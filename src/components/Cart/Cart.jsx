@@ -85,9 +85,7 @@ const Cart = () => {
   };
 
   const total = cartItems.reduce(
-    (acc, item) =>
-      acc +
-      ((item.product?.price ?? item.price ?? 0) * (item.quantity || 0)),
+    (acc, item) => acc + ((item.product?.price || 0) * (item.quantity || 0)),
     0
   );
 
@@ -104,34 +102,33 @@ const Cart = () => {
           <ProductList>
             {cartItems.map((item) => (
               <ProductItem key={item.id}>
+                {/* FILA SUPERIOR: Imagen + Nombre + Precio */}
                 <ProductTopRow>
                   <img
                     src={
-                      item.product?.imageUrl ||
-                      item.imageUrl ||
-                      `${IMAGE_BASE_URL}placeholder.jpg`
+                      item.product?.imageUrl
+                        ? item.product.imageUrl.startsWith("http")
+                          ? item.product.imageUrl
+                          : IMAGE_BASE_URL + item.product.imageUrl
+                        : `${IMAGE_BASE_URL}placeholder.jpg`
                     }
-                    alt={item.product?.name || item.name || "Producto"}
+                    alt={item.product?.name || "Producto"}
                   />
                   <div className="info">
-                    <h3>{item.product?.name || item.name || "Sin nombre"}</h3>
+                    <h3>{item.product?.name || "Sin nombre"}</h3>
                     <span>
-                      $
-                      {(
-                        item.product?.price ?? item.price ?? 0
-                      ).toLocaleString("es-AR")}
+                      ${item.product?.price?.toLocaleString("es-AR") || "0"}
                     </span>
                   </div>
                 </ProductTopRow>
 
+                {/* FILA INFERIOR: Botones + Cantidad */}
                 <ProductBottomRow>
                   <QuantityButton onClick={() => handleRemoveOne(item)}>
                     -
                   </QuantityButton>
                   <span>{item.quantity || 0}</span>
-                  <QuantityButton onClick={() => handleAddOne(item)}>
-                    +
-                  </QuantityButton>
+                  <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
                   <RemoveButton onClick={() => handleRemoveProduct(item)}>
                     Eliminar
                   </RemoveButton>
@@ -140,17 +137,11 @@ const Cart = () => {
             ))}
           </ProductList>
 
-          <TotalAmount>
-            Total: ${(total ?? 0).toLocaleString("es-AR")}
-          </TotalAmount>
+          <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
 
           <ButtonsRow>
-            <ClearCartButton onClick={handleClearCart}>
-              Vaciar carrito
-            </ClearCartButton>
-            <CheckoutButton onClick={handleCheckout}>
-              Ir al checkout
-            </CheckoutButton>
+            <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
+            <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
           </ButtonsRow>
         </>
       )}
@@ -159,4 +150,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
