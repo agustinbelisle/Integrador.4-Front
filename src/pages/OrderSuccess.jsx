@@ -85,6 +85,8 @@ const Button = styled(Link)`
   }
 `;
 
+const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
+
 const OrderSuccess = () => {
   const location = useLocation();
   const { orderId, amount, method, products } = location.state || {};
@@ -103,20 +105,25 @@ const OrderSuccess = () => {
 
       {products && products.length > 0 && (
         <ProductList>
-          {products.map((item, index) => (
-            <ProductItem key={index}>
-              <img
-                src={item.product?.images?.[0]?.url || item.product?.imageUrl || item.imageUrl || "https://via.placeholder.com/60"}
-                alt={item.product?.name || item.name || "Producto"}
-              />
-              <div className="info">
-                <h4>{item.product?.name || item.name || "Sin nombre"}</h4>
-                <span>
-                  {item.quantity} x ${item.product?.price?.toLocaleString("es-AR") || item.price?.toLocaleString("es-AR") || "0"}
-                </span>
-              </div>
-            </ProductItem>
-          ))}
+          {products.map((item, index) => {
+            const imageUrl = item.image
+              ? item.image.startsWith("http")
+                ? item.image
+                : `${IMAGE_BASE_URL}${item.image}`
+              : "https://via.placeholder.com/60";
+
+            return (
+              <ProductItem key={index}>
+                <img src={imageUrl} alt={item.name || "Producto"} />
+                <div className="info">
+                  <h4>{item.name || "Sin nombre"}</h4>
+                  <span>
+                    {item.quantity} x ${item.price?.toLocaleString("es-AR") || "0"}
+                  </span>
+                </div>
+              </ProductItem>
+            );
+          })}
         </ProductList>
       )}
 
