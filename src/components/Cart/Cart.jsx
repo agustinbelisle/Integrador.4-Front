@@ -91,11 +91,14 @@ const Cart = () => {
   );
 
   const getImageUrl = (item) => {
-    const url =
-      item.product?.imageUrl ||
-      item.imageUrl ||
+    // Si product.images existe, tomamos la primera imagen
+    let url =
+      item.product?.images?.[0]?.url || // primera imagen
+      item.product?.imageUrl || // legacy
+      item.imageUrl || // fallback
       `${IMAGE_BASE_URL}placeholder.jpg`;
-    // Si ya es URL completa, no concatenamos IMAGE_BASE_URL
+
+    // Si no es URL absoluta, agregamos IMAGE_BASE_URL
     return url.startsWith("http") ? url : IMAGE_BASE_URL + url;
   };
 
@@ -163,4 +166,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
