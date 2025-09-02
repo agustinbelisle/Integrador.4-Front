@@ -99,46 +99,28 @@ const Cart = () => {
 
       {!loading && cartItems.length > 0 && (
         <>
-          <ProductList>
-            {cartItems.map((item) => {
-              const imageUrl = item.image
-                ? item.image.startsWith("http")
-                  ? item.image
-                  : `${IMAGE_BASE_URL}${item.image}`
-                : `${IMAGE_BASE_URL}placeholder.jpg`;
+        
+<ProductList>
+  {cartItems.map((item) => (
+    <ProductItem key={item.id}>
+      <ProductTopRow>
+        <img src={item.product.imageUrl} alt={item.product.name} />
+        <div className="info">
+          <h3>{item.product.name}</h3>
+          <span>${item.product.price.toLocaleString("es-AR")}</span>
+        </div>
+      </ProductTopRow>
 
-              return (
-                <ProductItem key={item.itemId}>
-                  <ProductImage
-                    src={imageUrl}
-                    alt={item.name || "Producto"}
-                    onError={(e) =>
-                      (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)
-                    }
-                  />
-                  <ProductInfo>
-                    <strong>{item.name || "Producto sin nombre"}</strong>
-                    <br />
-                    <span style={{ color: "#007bff", fontWeight: "500" }}>
-                      ${item.price?.toFixed(2) || "0.00"}
-                    </span>
-                    <Quantity>
-                      <QuantityButton onClick={() => handleRemoveOne(item)}>
-                        -
-                      </QuantityButton>
-                      {item.quantity}
-                      <QuantityButton onClick={() => handleAddOne(item)}>
-                        +
-                      </QuantityButton>
-                    </Quantity>
-                  </ProductInfo>
-                  <RemoveButton onClick={() => handleRemoveProduct(item)}>
-                    Eliminar
-                  </RemoveButton>
-                </ProductItem>
-              );
-            })}
-          </ProductList>
+      <ProductBottomRow>
+        <QuantityButton onClick={() => handleDecrease(item.product.id)}>-</QuantityButton>
+        <span>{item.quantity}</span>
+        <QuantityButton onClick={() => handleIncrease(item.product.id)}>+</QuantityButton>
+        <RemoveButton onClick={() => handleRemove(item.product.id)}>Eliminar</RemoveButton>
+      </ProductBottomRow>
+    </ProductItem>
+  ))}
+</ProductList>
+
 
           <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
 

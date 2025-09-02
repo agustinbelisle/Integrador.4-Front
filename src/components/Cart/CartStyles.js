@@ -5,7 +5,7 @@ export const CartContainer = styled.div`
   background: #fff;
   border-radius: 10px;
   width: 100%;
-  max-width: 400px;
+  max-width: 450px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   
   h2 {
@@ -21,48 +21,56 @@ export const ProductList = styled.ul`
   list-style: none;
   padding: 0;
   margin: 20px 0;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 `;
 
 export const ProductItem = styled.li`
   display: flex;
-  align-items: center;
-  margin-bottom: 15px;
-  padding: 10px;
-  border-radius: 8px;
-  background: #fafafa;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  flex-direction: column; /* Para dos filas */
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
 `;
 
-export const ProductImage = styled.img`
-  width: 60px;
-  height: 60px;
-  object-fit: cover;
-  border-radius: 6px;
-  margin-right: 12px;
-  flex-shrink: 0;
-`;
-
-export const ProductInfo = styled.div`
-  flex: 1;
+export const ProductTopRow = styled.div`
   display: flex;
-  flex-direction: column;
-  font-family: 'Exo 2 Bold', sans-serif;
-  color: #333;
+  align-items: center;
+  gap: 15px;
 
-  span {
-    font-size: 0.95rem;
-    font-weight: 500;
+  img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    background-color: #f5f5f5;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+
+    h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+    span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #007bff;
+      margin-top: 4px;
+    }
   }
 `;
 
-export const Quantity = styled.div`
-  margin-top: 5px;
+export const ProductBottomRow = styled.div`
   display: flex;
   align-items: center;
-  font-weight: bold;
-  user-select: none;
+  gap: 10px;
+  margin-top: 10px;
 `;
 
 export const QuantityButton = styled.button`
@@ -71,13 +79,10 @@ export const QuantityButton = styled.button`
   color: white;
   font-weight: bold;
   padding: 6px 12px;
-  margin: 0 4px;
   border-radius: 6px;
   cursor: pointer;
-  user-select: none;
   transition: all 0.2s ease;
   font-family: 'Exo 2 Bold', sans-serif;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
   &:hover {
     background-color: rgba(0, 123, 255, 1);
@@ -97,16 +102,12 @@ export const RemoveButton = styled.button`
   padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
-  user-select: none;
   transition: all 0.3s ease;
   font-family: 'Exo 2 Bold', sans-serif;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  margin-left: 10px;
 
   &:hover {
     background-color: rgba(240, 192, 64, 1);
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
   }
 
   &:active {
@@ -138,15 +139,11 @@ export const ClearCartButton = styled.button`
   font-family: 'Exo 2 Bold', sans-serif;
   border-radius: 8px;
   cursor: pointer;
-  user-select: none;
   transition: all 0.3s ease;
-  backdrop-filter: blur(2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
   &:hover {
     background-color: rgba(0, 123, 255, 1);
     transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
   }
 
   &:active {
@@ -165,18 +162,15 @@ export const CheckoutButton = styled.button`
   font-family: 'Exo 2 Bold', sans-serif;
   border-radius: 8px;
   cursor: pointer;
-  user-select: none;
   transition: all 0.3s ease;
-  backdrop-filter: blur(2px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 
   &:hover {
     background-color: rgba(240, 192, 64, 1);
     transform: translateY(-2px) scale(1.03);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2);
   }
 
   &:active {
     transform: scale(0.97);
   }
 `;
+
