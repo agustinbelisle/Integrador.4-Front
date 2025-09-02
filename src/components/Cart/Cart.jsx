@@ -1,24 +1,27 @@
-import {
-  CartContainer,
-  ProductList,
-  ProductItem,
-  ProductInfo,
-  Quantity,
-  QuantityButton,
-  RemoveButton,
-  ButtonsRow,
-  ClearCartButton,
-  CheckoutButton,
-  TotalAmount,
-} from "./CartStyles";
-
+// src/components/Cart/Cart.jsx
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import {
+  CartContainer,
+  CartHeader,
+  CartItems,
+  CartItem,
+  ItemImage,
+  ItemDetails,
+  ItemName,
+  ItemPrice,
+  ItemQuantity,
+  QuantityButton,
+  RemoveButton,
+  CartFooter,
+  EmptyCart,
+  CheckoutButton,
+  ClearCartButton,
+} from "./CartStyles";
 
 import {
   fetchCart,
-  addItemToCart,
   updateCartItem,
   removeItemFromCart,
   clearCartRemote,
@@ -28,35 +31,46 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { isAuthenticated, user, token } = useSelector((state) => state.auth);
   const { cartItems, loading, error } = useSelector((state) => state.cart);
+  const { isAuthenticated, user, token } = useSelector((state) => state.auth);
 
-useEffect(() => {
-  if (isAuthenticated && user?.id && token) {
-    console.log("Token enviado desde Cart.jsx:", token);
-    console.log("User ID:", user.id);
-    dispatch(fetchCart({ userId: user.id, token }));
-  } else {
-    console.warn("No se puede cargar el carrito: token o user.id indefinido");
-  }
-}, [dispatch, isAuthenticated, user, token]);
+  // Cargar carrito remoto si está logeado
+  useEffect(() => {
+    if (isAuthenticated && user?.id && token) {
+      dispatch(fetchCart({ userId: user.id, token }));
+    }
+  }, [dispatch, isAuthenticated, user, token]);
 
-
-
-  const handleAdd = (productId) => {
-    dispatch(addItemToCart({ userId: user.id, productId, quantity: 1, token }));
-  };
-
-  const handleRemoveOne = (item) => {
-    if (item.quantity > 1) {
-      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
+  const handleCheckout = () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: "/checkout" } });
     } else {
-      dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+      navigate("/checkout");
     }
   };
 
   const handleAddOne = (item) => {
-    dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
+    dispatch(
+      updateCartItem({
+        itemId: item.itemId,
+        quantity: item.quantity + 1,
+        token,
+      })
+    );
+  };
+
+  const handleRemoveOne = (item) => {
+    if (item.quantity > 1) {
+      dispatch(
+        updateCartItem({
+          itemId: item.itemId,
+          quantity: item.quantity - 1,
+          token,
+        })
+      );
+    } else {
+      dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+    }
   };
 
   const handleRemoveProduct = (item) => {
@@ -64,63 +78,53 @@ useEffect(() => {
   };
 
   const handleClearCart = () => {
-    dispatch(clearCartRemote({ userId: user.id, token }));
-  };
-
-  const handleCheckout = () => {
-    if (isAuthenticated) {
-      navigate("/checkout");
-    } else {
-      navigate("/login", { state: { from: "/checkout" } });
+    if (user?.id && token) {
+      dispatch(clearCartRemote({ userId: user.id, token }));
     }
   };
 
-  const total = cartItems.reduce((acc, item) => {
-  const price = item.product?.price || 0;
-  return acc + price * item.quantity;
-}, 0);
+  const total = cartItems.reduce(
+    (acc, item) => acc + (item.product?.price || 0) * item.quantity,
+    0
+  );
 
+  if (loading) return <p>Cargando carrito...</p>;
+  if (!loading && cartItems.length === 0) return <EmptyCart>Tu carrito está vacío</EmptyCart>;
 
   return (
     <CartContainer>
-      <h2>Carrito de Compras</h2>
+      <CartHeader>
+        <h2>Tu Carrito</h2>
+        <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
+      </CartHeader>
 
-      {loading && <p>Cargando...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {!loading && cartItems.length === 0 && <p>Tu carrito está vacío.</p>}
+      <CartItems>
+        {cartItems.map((item) => (
+          <CartItem key={item.itemId}>
+            <ItemImage
+              src={item.product?.images?.[0]?.url || "/assets/images/default.png"}
+              alt={item.product?.name || "Imagen"}
+            />
+            <ItemDetails>
+              <ItemName>{item.product?.name || "Producto sin nombre"}</ItemName>
+              <ItemPrice>${item.product?.price}</ItemPrice>
+              <ItemQuantity>
+                <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
+                <span>{item.quantity}</span>
+                <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
+              </ItemQuantity>
+            </ItemDetails>
+            <RemoveButton onClick={() => handleRemoveProduct(item)}>X</RemoveButton>
+          </CartItem>
+        ))}
+      </CartItems>
 
-      {!loading && cartItems.length > 0 && (
-        <>
-          <ProductList>
-          {cartItems.map((item) => {
-            const name = item.product?.name || "Producto sin nombre";
-            const price = item.product?.price || 0;
-            return (
-              <ProductItem key={item.itemId || item.id}>
-                <ProductInfo>
-                  {name}
-                  <Quantity>
-                    <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
-                    {item.quantity}
-                    <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
-                  </Quantity>
-                </ProductInfo>
-                <RemoveButton onClick={() => handleRemoveProduct(item)}>Eliminar</RemoveButton>
-              </ProductItem>
-            );
-          })}
-
-          </ProductList>
-
-          <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
-
-          <ButtonsRow>
-            <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
-            <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
-          </ButtonsRow>
-        </>
-      )}
+      <CartFooter>
+        <p>Total: ${total.toFixed(2)}</p>
+        <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
+      </CartFooter>
     </CartContainer>
   );
 };

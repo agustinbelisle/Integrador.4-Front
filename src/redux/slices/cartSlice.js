@@ -9,9 +9,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // 👈 corregido
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async ({ userId, token }, { rejectWithValue }) => {
-    if (!userId || !token) {
-      return []; // usuario no logeado → carrito vacío del backend
-    }
+    if (!userId || !token) return [];
     try {
       const res = await axios.get(`${API_BASE_URL}/cart/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -19,7 +17,7 @@ export const fetchCart = createAsyncThunk(
       return res.data;
     } catch (err) {
       if (err.response?.status === 401) {
-        localStorage.removeItem("user"); // Limpia token expirado
+        localStorage.removeItem("user");
       }
       return rejectWithValue(
         err.response?.data?.message || "Error al cargar carrito"
@@ -135,21 +133,27 @@ const cartSlice = createSlice({
   reducers: {
     addToCartLocal: (state, action) => {
       const { product, quantity } = action.payload;
-      const existing = state.cartItems.find((item) => item.id === product.id);
+      const existing = state.cartItems.find(
+        (item) => item.product.id === product.id
+      );
       if (existing) {
         existing.quantity += quantity;
       } else {
-        state.cartItems.push({ ...product, quantity });
+        state.cartItems.push({
+          product,
+          quantity,
+          itemId: Date.now(), // temporal para local
+        });
       }
       saveCartToLocalStorage(state.cartItems);
     },
     removeOneItemLocal: (state, action) => {
-      const item = state.cartItems.find((i) => i.id === action.payload);
+      const item = state.cartItems.find((i) => i.product.id === action.payload);
       if (item) {
         item.quantity -= 1;
         if (item.quantity <= 0) {
           state.cartItems = state.cartItems.filter(
-            (i) => i.id !== action.payload
+            (i) => i.product.id !== action.payload
           );
         }
         saveCartToLocalStorage(state.cartItems);
@@ -157,7 +161,7 @@ const cartSlice = createSlice({
     },
     removeItemLocal: (state, action) => {
       state.cartItems = state.cartItems.filter(
-        (item) => item.id !== action.payload
+        (item) => item.product.id !== action.payload
       );
       saveCartToLocalStorage(state.cartItems);
     },
@@ -174,23 +178,11 @@ const cartSlice = createSlice({
       })
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
-        state.cartItems = action.payload
-          .filter((item) => item.product) // evita undefined
-          .map((item) => ({
-            id: item.product.id, // product id
-            name: item.product.name,
-            price: item.product.price,
-            quantity: item.quantity,
-            itemId: item.id, // cartItem id
-            image:
-              item.product.images &&
-              item.product.images.length > 0 &&
-              item.product.images[0].url
-                ? item.product.images[0].url.startsWith("http")
-                  ? item.product.images[0].url
-                  : `${API_BASE_URL}/uploads/${item.product.images[0].url}`
-                : "/assets/images/default.png",
-          }));
+        state.cartItems = action.payload.map((item) => ({
+          itemId: item.id, // cartItem id
+          product: item.product, // 👈 guardamos el objeto completo
+          quantity: item.quantity,
+        }));
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(fetchCart.rejected, (state, action) => {
@@ -199,26 +191,15 @@ const cartSlice = createSlice({
       })
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
-
         if (!item.product) {
           console.error("Producto indefinido en addItemToCart.fulfilled", item);
           return;
         }
-
         const index = state.cartItems.findIndex((ci) => ci.itemId === item.id);
-        const product = item.product;
         const newItem = {
-          id: product.id,
-          name: product.name,
-          price: product.price,
-          image:
-            product.images && product.images.length > 0 && product.images[0].url
-              ? product.images[0].url.startsWith("http")
-                ? product.images[0].url
-                : `${API_BASE_URL}/uploads/${product.images[0].url}`
-              : "/assets/images/default.png",
-          quantity: item.quantity,
           itemId: item.id,
+          product: item.product,
+          quantity: item.quantity,
         };
 
         if (index !== -1) {
@@ -226,7 +207,6 @@ const cartSlice = createSlice({
         } else {
           state.cartItems.push(newItem);
         }
-
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
@@ -260,4 +240,3 @@ export const {
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
-
