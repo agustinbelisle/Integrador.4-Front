@@ -3,15 +3,14 @@ import {
   CartContainer,
   ProductList,
   ProductItem,
-  ProductInfo,
-  Quantity,
+  ProductTopRow,
+  ProductBottomRow,
   QuantityButton,
   RemoveButton,
   ButtonsRow,
   ClearCartButton,
   CheckoutButton,
   TotalAmount,
-  ProductImage,
 } from "./CartStyles";
 
 import { useEffect } from "react";
@@ -41,6 +40,7 @@ const Cart = () => {
     }
   }, [dispatch, isAuthenticated, user, token]);
 
+  // Handlers
   const handleAddOne = (item) => {
     dispatch(
       updateCartItem({
@@ -83,8 +83,9 @@ const Cart = () => {
     }
   };
 
+  // Total
   const total = cartItems.reduce(
-    (acc, item) => acc + (item.price || 0) * item.quantity,
+    (acc, item) => acc + (item.product.price || 0) * item.quantity,
     0
   );
 
@@ -94,43 +95,41 @@ const Cart = () => {
 
       {loading && <p>Cargando...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
-
       {!loading && cartItems.length === 0 && <p>Tu carrito está vacío.</p>}
 
       {!loading && cartItems.length > 0 && (
         <>
-        
-<ProductList>
-  {cartItems.map((item) => (
-    <ProductItem key={item.id}>
-      <ProductTopRow>
-        <img src={item.product.imageUrl} alt={item.product.name} />
-        <div className="info">
-          <h3>{item.product.name}</h3>
-          <span>${item.product.price.toLocaleString("es-AR")}</span>
-        </div>
-      </ProductTopRow>
+          <ProductList>
+            {cartItems.map((item) => (
+              <ProductItem key={item.id}>
+                {/* Primera fila: imagen + info */}
+                <ProductTopRow>
+                  <img
+                    src={item.product.imageUrl || `${IMAGE_BASE_URL}placeholder.jpg`}
+                    alt={item.product.name}
+                  />
+                  <div className="info">
+                    <h3>{item.product.name}</h3>
+                    <span>${item.product.price.toLocaleString("es-AR")}</span>
+                  </div>
+                </ProductTopRow>
 
-      <ProductBottomRow>
-        <QuantityButton onClick={() => handleDecrease(item.product.id)}>-</QuantityButton>
-        <span>{item.quantity}</span>
-        <QuantityButton onClick={() => handleIncrease(item.product.id)}>+</QuantityButton>
-        <RemoveButton onClick={() => handleRemove(item.product.id)}>Eliminar</RemoveButton>
-      </ProductBottomRow>
-    </ProductItem>
-  ))}
-</ProductList>
-
+                {/* Segunda fila: cantidad + eliminar */}
+                <ProductBottomRow>
+                  <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
+                  <span>{item.quantity}</span>
+                  <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
+                  <RemoveButton onClick={() => handleRemoveProduct(item)}>Eliminar</RemoveButton>
+                </ProductBottomRow>
+              </ProductItem>
+            ))}
+          </ProductList>
 
           <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
 
           <ButtonsRow>
-            <ClearCartButton onClick={handleClearCart}>
-              Vaciar carrito
-            </ClearCartButton>
-            <CheckoutButton onClick={handleCheckout}>
-              Ir al checkout
-            </CheckoutButton>
+            <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
+            <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
           </ButtonsRow>
         </>
       )}
@@ -139,5 +138,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
-
