@@ -1,3 +1,4 @@
+// src/pages/Checkout.jsx
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -124,10 +125,8 @@ const Checkout = () => {
                 <ProductItem key={item.itemId || item.id}>
                   <ProductImage
                     src={imageUrl}
-                    alt={item.name}
-                    onError={(e) =>
-                      (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)
-                    }
+                    alt={item.name || "Producto sin nombre"}
+                    onError={(e) => (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)}
                     style={{
                       width: "80px",
                       height: "80px",
@@ -137,7 +136,7 @@ const Checkout = () => {
                     }}
                   />
                   <div style={{ marginLeft: "1rem" }}>
-                    <strong>{item.name}</strong> ×{item.quantity}
+                    <strong>{item.name || "Producto sin nombre"}</strong> ×{item.quantity}
                     <br />
                     <span style={{ color: "#007bff", fontWeight: "500" }}>
                       ${item.price * item.quantity}
@@ -257,3 +256,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
+
