@@ -1,8 +1,7 @@
-// src/redux/cartSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL; // 👈 corregido
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // --- Async thunks ---
 
@@ -133,36 +132,33 @@ const cartSlice = createSlice({
   reducers: {
     addToCartLocal: (state, action) => {
       const { product, quantity } = action.payload;
-      const existing = state.cartItems.find(
-        (item) => item.product.id === product.id
-      );
+      const existing = state.cartItems.find((item) => item.itemId === product.id);
+      const newItem = {
+        itemId: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0]?.url || "placeholder.jpg",
+        quantity,
+      };
       if (existing) {
         existing.quantity += quantity;
       } else {
-        state.cartItems.push({
-          product,
-          quantity,
-          itemId: Date.now(), // temporal para local
-        });
+        state.cartItems.push(newItem);
       }
       saveCartToLocalStorage(state.cartItems);
     },
     removeOneItemLocal: (state, action) => {
-      const item = state.cartItems.find((i) => i.product.id === action.payload);
+      const item = state.cartItems.find((i) => i.itemId === action.payload);
       if (item) {
         item.quantity -= 1;
         if (item.quantity <= 0) {
-          state.cartItems = state.cartItems.filter(
-            (i) => i.product.id !== action.payload
-          );
+          state.cartItems = state.cartItems.filter((i) => i.itemId !== action.payload);
         }
         saveCartToLocalStorage(state.cartItems);
       }
     },
     removeItemLocal: (state, action) => {
-      state.cartItems = state.cartItems.filter(
-        (item) => item.product.id !== action.payload
-      );
+      state.cartItems = state.cartItems.filter((item) => item.itemId !== action.payload);
       saveCartToLocalStorage(state.cartItems);
     },
     clearCartLocal: (state) => {
@@ -179,8 +175,10 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cartItems = action.payload.map((item) => ({
-          itemId: item.id, // cartItem id
-          product: item.product, // 👈 guardamos el objeto completo
+          itemId: item.id,
+          name: item.product?.name || "Producto sin nombre",
+          price: item.product?.price || 0,
+          image: item.product?.images?.[0]?.url || "placeholder.jpg",
           quantity: item.quantity,
         }));
         saveCartToLocalStorage(state.cartItems);
@@ -191,38 +189,29 @@ const cartSlice = createSlice({
       })
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
-        if (!item.product) {
-          console.error("Producto indefinido en addItemToCart.fulfilled", item);
-          return;
-        }
+        if (!item.product) return;
         const index = state.cartItems.findIndex((ci) => ci.itemId === item.id);
         const newItem = {
           itemId: item.id,
-          product: item.product,
+          name: item.product.name,
+          price: item.product.price,
+          image: item.product.images?.[0]?.url || "placeholder.jpg",
           quantity: item.quantity,
         };
-
-        if (index !== -1) {
-          state.cartItems[index] = newItem;
-        } else {
-          state.cartItems.push(newItem);
-        }
+        if (index !== -1) state.cartItems[index] = newItem;
+        else state.cartItems.push(newItem);
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
-        const index = state.cartItems.findIndex(
-          (ci) => ci.itemId === updatedItem.id
-        );
+        const index = state.cartItems.findIndex((ci) => ci.itemId === updatedItem.id);
         if (index !== -1) {
           state.cartItems[index].quantity = updatedItem.quantity;
           saveCartToLocalStorage(state.cartItems);
         }
       })
       .addCase(removeItemFromCart.fulfilled, (state, action) => {
-        state.cartItems = state.cartItems.filter(
-          (ci) => ci.itemId !== action.payload
-        );
+        state.cartItems = state.cartItems.filter((ci) => ci.itemId !== action.payload);
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(clearCartRemote.fulfilled, (state) => {
@@ -232,11 +221,7 @@ const cartSlice = createSlice({
   },
 });
 
-export const {
-  addToCartLocal,
-  removeOneItemLocal,
-  removeItemLocal,
-  clearCartLocal,
-} = cartSlice.actions;
+export const { addToCartLocal, removeOneItemLocal, removeItemLocal, clearCartLocal } =
+  cartSlice.actions;
 
 export default cartSlice.reducer;

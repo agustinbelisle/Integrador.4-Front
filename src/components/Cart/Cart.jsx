@@ -1,4 +1,3 @@
-// src/components/Cart/Cart.jsx
 import {
   CartContainer,
   ProductList,
@@ -19,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 
 import {
   fetchCart,
-  addItemToCart,
   updateCartItem,
   removeItemFromCart,
   clearCartRemote,
@@ -40,24 +38,12 @@ const Cart = () => {
   }, [dispatch, isAuthenticated, user, token]);
 
   const handleAddOne = (item) => {
-    dispatch(
-      updateCartItem({
-        itemId: item.itemId,
-        quantity: item.quantity + 1,
-        token,
-      })
-    );
+    dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
   };
 
   const handleRemoveOne = (item) => {
     if (item.quantity > 1) {
-      dispatch(
-        updateCartItem({
-          itemId: item.itemId,
-          quantity: item.quantity - 1,
-          token,
-        })
-      );
+      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
     } else {
       dispatch(removeItemFromCart({ itemId: item.itemId, token }));
     }
@@ -81,10 +67,7 @@ const Cart = () => {
     }
   };
 
-  const total = cartItems.reduce(
-    (acc, item) => acc + (item.product?.price || 0) * item.quantity,
-    0
-  );
+  const total = cartItems.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0);
 
   return (
     <CartContainer>
@@ -101,20 +84,14 @@ const Cart = () => {
             {cartItems.map((item) => (
               <ProductItem key={item.itemId}>
                 <ProductInfo>
-                  {item.product?.name || "Producto sin nombre"}
+                  {item.name || "Producto sin nombre"}
                   <Quantity>
-                    <QuantityButton onClick={() => handleRemoveOne(item)}>
-                      -
-                    </QuantityButton>
+                    <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
                     {item.quantity}
-                    <QuantityButton onClick={() => handleAddOne(item)}>
-                      +
-                    </QuantityButton>
+                    <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
                   </Quantity>
                 </ProductInfo>
-                <RemoveButton onClick={() => handleRemoveProduct(item)}>
-                  Eliminar
-                </RemoveButton>
+                <RemoveButton onClick={() => handleRemoveProduct(item)}>Eliminar</RemoveButton>
               </ProductItem>
             ))}
           </ProductList>
@@ -122,12 +99,8 @@ const Cart = () => {
           <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
 
           <ButtonsRow>
-            <ClearCartButton onClick={handleClearCart}>
-              Vaciar carrito
-            </ClearCartButton>
-            <CheckoutButton onClick={handleCheckout}>
-              Ir al checkout
-            </CheckoutButton>
+            <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
+            <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
           </ButtonsRow>
         </>
       )}
@@ -136,4 +109,3 @@ const Cart = () => {
 };
 
 export default Cart;
-

@@ -1,4 +1,3 @@
-// src/pages/Checkout.jsx
 import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -70,11 +69,7 @@ const Checkout = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      if (!orderRes.ok) {
-        const errMsg = await orderRes.text();
-        throw new Error(errMsg || "Error al crear la orden.");
-      }
+      if (!orderRes.ok) throw new Error(await orderRes.text());
 
       const order = await orderRes.json();
 
@@ -86,21 +81,13 @@ const Checkout = () => {
         },
         body: JSON.stringify({ method: paymentMethod }),
       });
-
-      if (!paymentRes.ok) {
-        const errMsg = await paymentRes.text();
-        throw new Error(errMsg || "Error al procesar el pago.");
-      }
+      if (!paymentRes.ok) throw new Error(await paymentRes.text());
 
       const payment = await paymentRes.json();
       dispatch(clearCartRemote({ userId: user.id, token }));
 
       navigate("/order-success", {
-        state: {
-          orderId: order.id,
-          amount: payment.amount,
-          method: payment.method,
-        },
+        state: { orderId: order.id, amount: payment.amount, method: payment.method },
       });
     } catch (error) {
       console.error("Error durante el checkout:", error);
@@ -124,10 +111,10 @@ const Checkout = () => {
                 : `${IMAGE_BASE_URL}placeholder.jpg`;
 
               return (
-                <ProductItem key={item.itemId || item.id}>
+                <ProductItem key={item.itemId}>
                   <ProductImage
                     src={imageUrl}
-                    alt={item.name || "Producto sin nombre"}
+                    alt={item.name}
                     onError={(e) => (e.currentTarget.src = `${IMAGE_BASE_URL}placeholder.jpg`)}
                     style={{
                       width: "80px",
@@ -138,10 +125,10 @@ const Checkout = () => {
                     }}
                   />
                   <div style={{ marginLeft: "1rem" }}>
-                    <strong>{item.name || "Producto sin nombre"}</strong> ×{item.quantity}
+                    <strong>{item.name}</strong> ×{item.quantity}
                     <br />
                     <span style={{ color: "#007bff", fontWeight: "500" }}>
-                      ${((item.price || 0) * item.quantity).toFixed(2)}
+                      ${(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
                 </ProductItem>
@@ -258,5 +245,4 @@ const Checkout = () => {
 };
 
 export default Checkout;
-
 
