@@ -1,27 +1,25 @@
 // src/components/Cart/Cart.jsx
+import {
+  CartContainer,
+  ProductList,
+  ProductItem,
+  ProductInfo,
+  Quantity,
+  QuantityButton,
+  RemoveButton,
+  ButtonsRow,
+  ClearCartButton,
+  CheckoutButton,
+  TotalAmount,
+} from "./CartStyles";
+
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import {
-  CartContainer,
-  CartHeader,
-  CartItems,
-  CartItem,
-  ItemImage,
-  ItemDetails,
-  ItemName,
-  ItemPrice,
-  ItemQuantity,
-  QuantityButton,
-  RemoveButton,
-  CartFooter,
-  EmptyCart,
-  CheckoutButton,
-  ClearCartButton,
-} from "./CartStyles";
 
 import {
   fetchCart,
+  addItemToCart,
   updateCartItem,
   removeItemFromCart,
   clearCartRemote,
@@ -31,8 +29,8 @@ const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { cartItems, loading, error } = useSelector((state) => state.cart);
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
+  const { cartItems, loading, error } = useSelector((state) => state.cart);
 
   // Cargar carrito remoto si está logeado
   useEffect(() => {
@@ -40,14 +38,6 @@ const Cart = () => {
       dispatch(fetchCart({ userId: user.id, token }));
     }
   }, [dispatch, isAuthenticated, user, token]);
-
-  const handleCheckout = () => {
-    if (!isAuthenticated) {
-      navigate("/login", { state: { from: "/checkout" } });
-    } else {
-      navigate("/checkout");
-    }
-  };
 
   const handleAddOne = (item) => {
     dispatch(
@@ -83,50 +73,67 @@ const Cart = () => {
     }
   };
 
+  const handleCheckout = () => {
+    if (isAuthenticated) {
+      navigate("/checkout");
+    } else {
+      navigate("/login", { state: { from: "/checkout" } });
+    }
+  };
+
   const total = cartItems.reduce(
     (acc, item) => acc + (item.product?.price || 0) * item.quantity,
     0
   );
 
-  if (loading) return <p>Cargando carrito...</p>;
-  if (!loading && cartItems.length === 0) return <EmptyCart>Tu carrito está vacío</EmptyCart>;
-
   return (
     <CartContainer>
-      <CartHeader>
-        <h2>Tu Carrito</h2>
-        <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
-      </CartHeader>
+      <h2>Carrito de Compras</h2>
 
+      {loading && <p>Cargando...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <CartItems>
-        {cartItems.map((item) => (
-          <CartItem key={item.itemId}>
-            <ItemImage
-              src={item.product?.images?.[0]?.url || "/assets/images/default.png"}
-              alt={item.product?.name || "Imagen"}
-            />
-            <ItemDetails>
-              <ItemName>{item.product?.name || "Producto sin nombre"}</ItemName>
-              <ItemPrice>${item.product?.price}</ItemPrice>
-              <ItemQuantity>
-                <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
-                <span>{item.quantity}</span>
-                <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
-              </ItemQuantity>
-            </ItemDetails>
-            <RemoveButton onClick={() => handleRemoveProduct(item)}>X</RemoveButton>
-          </CartItem>
-        ))}
-      </CartItems>
+      {!loading && cartItems.length === 0 && <p>Tu carrito está vacío.</p>}
 
-      <CartFooter>
-        <p>Total: ${total.toFixed(2)}</p>
-        <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
-      </CartFooter>
+      {!loading && cartItems.length > 0 && (
+        <>
+          <ProductList>
+            {cartItems.map((item) => (
+              <ProductItem key={item.itemId}>
+                <ProductInfo>
+                  {item.product?.name || "Producto sin nombre"}
+                  <Quantity>
+                    <QuantityButton onClick={() => handleRemoveOne(item)}>
+                      -
+                    </QuantityButton>
+                    {item.quantity}
+                    <QuantityButton onClick={() => handleAddOne(item)}>
+                      +
+                    </QuantityButton>
+                  </Quantity>
+                </ProductInfo>
+                <RemoveButton onClick={() => handleRemoveProduct(item)}>
+                  Eliminar
+                </RemoveButton>
+              </ProductItem>
+            ))}
+          </ProductList>
+
+          <TotalAmount>Total: ${total.toFixed(2)}</TotalAmount>
+
+          <ButtonsRow>
+            <ClearCartButton onClick={handleClearCart}>
+              Vaciar carrito
+            </ClearCartButton>
+            <CheckoutButton onClick={handleCheckout}>
+              Ir al checkout
+            </CheckoutButton>
+          </ButtonsRow>
+        </>
+      )}
     </CartContainer>
   );
 };
 
 export default Cart;
+
