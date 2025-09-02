@@ -39,13 +39,13 @@ export const ProductTopRow = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 8px;
 
   img {
     width: 60px;
     height: 60px;
     object-fit: cover;
     border-radius: 6px;
-    background-color: #f5f5f5;
   }
 
   .info {
@@ -53,17 +53,12 @@ export const ProductTopRow = styled.div`
     flex-direction: column;
 
     h3 {
+      font-size: 1rem;
       margin: 0;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #333;
     }
-
     span {
-      font-size: 0.95rem;
-      font-weight: 500;
+      font-size: 0.9rem;
       color: #007bff;
-      margin-top: 4px;
     }
   }
 `;
@@ -71,9 +66,9 @@ export const ProductTopRow = styled.div`
 export const ProductBottomRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 8px;
+  gap: 8px;
 `;
+
 
 export const QuantityButton = styled.button`
   background-color: rgba(0, 123, 255, 0.85);

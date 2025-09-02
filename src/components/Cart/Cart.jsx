@@ -33,30 +33,30 @@ const Cart = () => {
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
   const { cartItems, loading, error } = useSelector((state) => state.cart);
 
-  // Cargar carrito remoto si está logeado
   useEffect(() => {
     if (isAuthenticated && user?.id && token) {
       dispatch(fetchCart({ userId: user.id, token }));
     }
   }, [dispatch, isAuthenticated, user, token]);
 
-  // Handlers
   const handleAddOne = (item) => {
+    if (!item?.itemId) return;
     dispatch(
       updateCartItem({
         itemId: item.itemId,
-        quantity: item.quantity + 1,
+        quantity: (item.quantity || 0) + 1,
         token,
       })
     );
   };
 
   const handleRemoveOne = (item) => {
-    if (item.quantity > 1) {
+    if (!item?.itemId) return;
+    if ((item.quantity || 0) > 1) {
       dispatch(
         updateCartItem({
           itemId: item.itemId,
-          quantity: item.quantity - 1,
+          quantity: (item.quantity || 1) - 1,
           token,
         })
       );
@@ -66,6 +66,7 @@ const Cart = () => {
   };
 
   const handleRemoveProduct = (item) => {
+    if (!item?.itemId) return;
     dispatch(removeItemFromCart({ itemId: item.itemId, token }));
   };
 
@@ -83,9 +84,8 @@ const Cart = () => {
     }
   };
 
-  // Total
   const total = cartItems.reduce(
-    (acc, item) => acc + (item.product.price || 0) * item.quantity,
+    (acc, item) => acc + ((item.product?.price || 0) * (item.quantity || 0)),
     0
   );
 
@@ -102,22 +102,22 @@ const Cart = () => {
           <ProductList>
             {cartItems.map((item) => (
               <ProductItem key={item.id}>
-                {/* Primera fila: imagen + info */}
                 <ProductTopRow>
                   <img
-                    src={item.product.imageUrl || `${IMAGE_BASE_URL}placeholder.jpg`}
-                    alt={item.product.name}
+                    src={item.product?.imageUrl || `${IMAGE_BASE_URL}placeholder.jpg`}
+                    alt={item.product?.name || "Producto"}
                   />
                   <div className="info">
-                    <h3>{item.product.name}</h3>
-                    <span>${item.product.price.toLocaleString("es-AR")}</span>
+                    <h3>{item.product?.name || "Sin nombre"}</h3>
+                    <span>
+                      ${item.product?.price?.toLocaleString("es-AR") || "0"}
+                    </span>
                   </div>
                 </ProductTopRow>
 
-                {/* Segunda fila: cantidad + eliminar */}
                 <ProductBottomRow>
                   <QuantityButton onClick={() => handleRemoveOne(item)}>-</QuantityButton>
-                  <span>{item.quantity}</span>
+                  <span>{item.quantity || 0}</span>
                   <QuantityButton onClick={() => handleAddOne(item)}>+</QuantityButton>
                   <RemoveButton onClick={() => handleRemoveProduct(item)}>Eliminar</RemoveButton>
                 </ProductBottomRow>
@@ -138,3 +138,4 @@ const Cart = () => {
 };
 
 export default Cart;
+
