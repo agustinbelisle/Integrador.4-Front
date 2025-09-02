@@ -32,6 +32,44 @@ const Info = styled.div`
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 40px;
+  width: 100%;
+  max-width: 600px;
+`;
+
+const ProductList = styled.div`
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 40px;
+`;
+
+const ProductItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  border-bottom: 1px solid #ddd;
+
+  img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-right: 16px;
+  }
+
+  .info {
+    flex: 1;
+    text-align: left;
+
+    h4 {
+      margin: 0 0 4px 0;
+      font-size: 1rem;
+    }
+
+    span {
+      font-size: 0.9rem;
+      color: #555;
+    }
+  }
 `;
 
 const Button = styled(Link)`
@@ -49,7 +87,7 @@ const Button = styled(Link)`
 
 const OrderSuccess = () => {
   const location = useLocation();
-  const { orderId, amount, method } = location.state || {};
+  const { orderId, amount, method, products } = location.state || {};
 
   return (
     <Container>
@@ -59,9 +97,28 @@ const OrderSuccess = () => {
 
       <Info>
         {orderId && <p><strong>Orden N.º:</strong> {orderId}</p>}
-        {amount && <p><strong>Total pagado:</strong> ${amount}</p>}
+        {amount && <p><strong>Total pagado:</strong> ${amount.toLocaleString("es-AR")}</p>}
         {method && <p><strong>Método de pago:</strong> {method.toUpperCase()}</p>}
       </Info>
+
+      {products && products.length > 0 && (
+        <ProductList>
+          {products.map((item, index) => (
+            <ProductItem key={index}>
+              <img
+                src={item.product?.images?.[0]?.url || item.product?.imageUrl || item.imageUrl || "https://via.placeholder.com/60"}
+                alt={item.product?.name || item.name || "Producto"}
+              />
+              <div className="info">
+                <h4>{item.product?.name || item.name || "Sin nombre"}</h4>
+                <span>
+                  {item.quantity} x ${item.product?.price?.toLocaleString("es-AR") || item.price?.toLocaleString("es-AR") || "0"}
+                </span>
+              </div>
+            </ProductItem>
+          ))}
+        </ProductList>
+      )}
 
       <Button to="/">Volver al inicio</Button>
     </Container>
@@ -69,3 +126,4 @@ const OrderSuccess = () => {
 };
 
 export default OrderSuccess;
+
