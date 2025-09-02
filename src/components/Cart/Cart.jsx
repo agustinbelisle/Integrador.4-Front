@@ -91,14 +91,14 @@ const Cart = () => {
   );
 
   const getImageUrl = (item) => {
-    // Si product.images existe, tomamos la primera imagen
-    let url =
-      item.product?.images?.[0]?.url || // primera imagen
-      item.product?.imageUrl || // legacy
-      item.imageUrl || // fallback
-      `${IMAGE_BASE_URL}placeholder.jpg`;
+    console.log("Cart item:", item); // <--- para debug
 
-    // Si no es URL absoluta, agregamos IMAGE_BASE_URL
+    const url =
+      item.product?.images?.[0]?.url || // primera imagen del array
+      item.product?.image || // propiedad simple legacy
+      item.image || // fallback directo del item
+      `${IMAGE_BASE_URL}placeholder.jpg`; // placeholder
+
     return url.startsWith("http") ? url : IMAGE_BASE_URL + url;
   };
 
