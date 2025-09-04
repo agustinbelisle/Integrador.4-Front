@@ -1,4 +1,5 @@
 // src/components/Cart/Cart.jsx
+
 import {
   CartContainer,
   ProductList,
@@ -12,16 +13,18 @@ import {
   CheckoutButton,
   TotalAmount,
 } from "./CartStyles";
-
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
 import {
   fetchCart,
   updateCartItem,
   removeItemFromCart,
   clearCartRemote,
+  addToCartLocal,
+  removeOneItemLocal,
+  removeItemLocal,
+  clearCartLocal,
 } from "../../redux/slices/cartSlice";
 
 const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
@@ -29,7 +32,6 @@ const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 const Cart = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const { isAuthenticated, user, token } = useSelector((state) => state.auth);
   const { cartItems, loading, error } = useSelector((state) => state.cart);
 
@@ -40,39 +42,38 @@ const Cart = () => {
   }, [dispatch, isAuthenticated, user, token]);
 
   const handleAddOne = (item) => {
-    if (!item?.itemId) return;
-    dispatch(
-      updateCartItem({
-        itemId: item.itemId,
-        quantity: (item.quantity || 0) + 1,
-        token,
-      })
-    );
+    if (isAuthenticated && token && item?.itemId) {
+      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
+    } else {
+      dispatch(addToCartLocal({ product: item.product || item, quantity: 1 }));
+    }
   };
 
   const handleRemoveOne = (item) => {
-    if (!item?.itemId) return;
-    if ((item.quantity || 0) > 1) {
-      dispatch(
-        updateCartItem({
-          itemId: item.itemId,
-          quantity: (item.quantity || 1) - 1,
-          token,
-        })
-      );
+    if (isAuthenticated && token && item?.itemId) {
+      if (item.quantity > 1) {
+        dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
+      } else {
+        dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+      }
     } else {
-      dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+      dispatch(removeOneItemLocal({ productId: item.product?.id || item.id }));
     }
   };
 
   const handleRemoveProduct = (item) => {
-    if (!item?.itemId) return;
-    dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+    if (isAuthenticated && token && item?.itemId) {
+      dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+    } else {
+      dispatch(removeItemLocal({ productId: item.product?.id || item.id }));
+    }
   };
 
   const handleClearCart = () => {
-    if (user?.id && token) {
+    if (isAuthenticated && token && user?.id) {
       dispatch(clearCartRemote({ userId: user.id, token }));
+    } else {
+      dispatch(clearCartLocal());
     }
   };
 
@@ -91,25 +92,20 @@ const Cart = () => {
   );
 
   const getImageUrl = (item) => {
-    console.log("Cart item:", item); // <--- para debug
-
     const url =
-      item.product?.images?.[0]?.url || // primera imagen del array
-      item.product?.image || // propiedad simple legacy
-      item.image || // fallback directo del item
-      `${IMAGE_BASE_URL}placeholder.jpg`; // placeholder
-
+      item.product?.images?.[0]?.url ||
+      item.product?.image ||
+      item.image ||
+      `${IMAGE_BASE_URL}placeholder.jpg`;
     return url.startsWith("http") ? url : IMAGE_BASE_URL + url;
   };
 
   return (
     <CartContainer>
       <h2>Carrito de Compras</h2>
-
       {loading && <p>Cargando...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
       {!loading && cartItems.length === 0 && <p>Tu carrito está vacío.</p>}
-
       {!loading && cartItems.length > 0 && (
         <>
           <ProductList>
@@ -130,7 +126,6 @@ const Cart = () => {
                     </span>
                   </div>
                 </ProductTopRow>
-
                 <ProductBottomRow>
                   <QuantityButton onClick={() => handleRemoveOne(item)}>
                     -
@@ -146,11 +141,9 @@ const Cart = () => {
               </ProductItem>
             ))}
           </ProductList>
-
           <TotalAmount>
             Total: ${(total ?? 0).toLocaleString("es-AR")}
           </TotalAmount>
-
           <ButtonsRow>
             <ClearCartButton onClick={handleClearCart}>
               Vaciar carrito
