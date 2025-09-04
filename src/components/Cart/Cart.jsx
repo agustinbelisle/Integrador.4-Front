@@ -42,32 +42,40 @@ const Cart = () => {
   }, [dispatch, isAuthenticated, user, token]);
 
   const handleAddOne = (item) => {
-    if (isAuthenticated && token && item?.itemId) {
-      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
-    } else {
-      dispatch(addToCartLocal({ product: item.product || item, quantity: 1 }));
-    }
-  };
+  if (isAuthenticated && token && item?.itemId) {
+    dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
+  } else {
+    const product = {
+      id: item.product?.id || item.itemId || item.id,
+      name: item.product?.name || item.name,
+      price: item.product?.price || item.price,
+      images: item.product?.images || [{ url: item.image }],
+    };
+    dispatch(addToCartLocal({ product, quantity: 1 }));
+  }
+};
+
 
   const handleRemoveOne = (item) => {
-    if (isAuthenticated && token && item?.itemId) {
-      if (item.quantity > 1) {
-        dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
-      } else {
-        dispatch(removeItemFromCart({ itemId: item.itemId, token }));
-      }
+  if (isAuthenticated && token && item?.itemId) {
+    if (item.quantity > 1) {
+      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
     } else {
-      dispatch(removeOneItemLocal({ productId: item.product?.id || item.id }));
-    }
-  };
-
-  const handleRemoveProduct = (item) => {
-    if (isAuthenticated && token && item?.itemId) {
       dispatch(removeItemFromCart({ itemId: item.itemId, token }));
-    } else {
-      dispatch(removeItemLocal({ productId: item.product?.id || item.id }));
     }
-  };
+  } else {
+    dispatch(removeOneItemLocal(item.product?.id || item.itemId || item.id));
+  }
+};
+
+const handleRemoveProduct = (item) => {
+  if (isAuthenticated && token && item?.itemId) {
+    dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+  } else {
+    dispatch(removeItemLocal(item.product?.id || item.itemId || item.id));
+  }
+};
+
 
   const handleClearCart = () => {
     if (isAuthenticated && token && user?.id) {
