@@ -8,7 +8,7 @@ import CartPage from "../pages/Cart";
 import Login from "../pages/Login";
 import PrivateRoute from "./PrivateRoute";
 import ProductPage from "../pages/ProductPage";
-import OrderSuccess from "../pages/OrderSuccess"; // ✅ importar correctamente
+import OrderSuccess from "../pages/OrderSuccess"; 
 
 const AppRoutes = () => {
   return (
@@ -21,7 +21,7 @@ const AppRoutes = () => {
       <Route path="/cart" element={<CartPage />} />
       <Route path="/producto/:id" element={<ProductPage />} />
       <Route path="/checkout" element={<PrivateRoute element={<CheckoutPage />} />} />
-      <Route path="/order-success" element={<OrderSuccess />} /> {/* ✅ corregido */}
+      <Route path="/order-success" element={<OrderSuccess />} /> 
     </Routes>
   );
 };

@@ -25,7 +25,7 @@ const ProductPage = () => {
         const res = await fetch(`${API_BASE_URL}/products/${id}`);
         const data = await res.json();
 
-        // ✅ usamos directamente las URLs del backend
+        
         const enrichedImages = data.images.map(img => ({
           ...img,
           fullUrl: img.url

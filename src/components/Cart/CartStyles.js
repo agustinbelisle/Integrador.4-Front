@@ -105,7 +105,7 @@ export const RemoveButton = styled.button`
   transition: all 0.3s ease;
   font-family: 'Exo 2 Bold', sans-serif;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  margin-left: auto; /* Empuja el botón a la derecha */
+  margin-left: auto; 
 
   &:hover {
     background-color: rgba(240, 192, 64, 1);

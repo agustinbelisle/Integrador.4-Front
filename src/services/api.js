@@ -8,7 +8,7 @@ export const apiFetch = async (endpoint, options = {}) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // necesario si usás cookies/JWT
+      credentials: 'include', 
       ...options,
     });
 
