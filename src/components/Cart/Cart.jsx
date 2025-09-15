@@ -1,5 +1,4 @@
 // src/components/Cart/Cart.jsx
-
 import {
   CartContainer,
   ProductList,
@@ -45,7 +44,11 @@ const Cart = () => {
   const handleAddOne = (item) => {
     if (isAuthenticated && token && item?.cartItemId) {
       dispatch(
-        updateCartItem({ itemId: item.cartItemId, quantity: item.quantity + 1, token })
+        updateCartItem({
+          itemId: item.cartItemId,
+          quantity: item.quantity + 1,
+          token,
+        })
       );
     } else {
       const product = {
@@ -63,7 +66,11 @@ const Cart = () => {
     if (isAuthenticated && token && item?.cartItemId) {
       if (item.quantity > 1) {
         dispatch(
-          updateCartItem({ itemId: item.cartItemId, quantity: item.quantity - 1, token })
+          updateCartItem({
+            itemId: item.cartItemId,
+            quantity: item.quantity - 1,
+            token,
+          })
         );
       } else {
         dispatch(removeItemFromCart({ itemId: item.cartItemId, token }));
@@ -102,10 +109,7 @@ const Cart = () => {
   );
 
   const getImageUrl = (item) => {
-    const url =
-      item.product?.images?.[0]?.url ||
-      item.image ||
-      `${IMAGE_BASE_URL}placeholder.jpg`;
+    const url = item.product?.images?.[0]?.url || item.image || `${IMAGE_BASE_URL}placeholder.jpg`;
     return url.startsWith("http") ? url : IMAGE_BASE_URL + url;
   };
 
@@ -121,21 +125,24 @@ const Cart = () => {
             {cartItems.map((item) => (
               <ProductItem key={item.cartItemId || item.productId}>
                 <ProductTopRow>
-                  <img
-                    src={getImageUrl(item)}
-                    alt={item.name || "Producto"}
-                  />
+                  <img src={getImageUrl(item)} alt={item.name || "Producto"} />
                   <div className="info">
                     <h3>{item.name || "Sin nombre"}</h3>
                     <span>${(item.price ?? 0).toLocaleString("es-AR")}</span>
                   </div>
                 </ProductTopRow>
                 <ProductBottomRow>
-                  <QuantityButton onClick={() => handleRemoveOne(item)}>
-                    -
+                  <QuantityButton
+                    disabled={!item.cartItemId}
+                    onClick={() => handleRemoveOne(item)}
+                  >
+                    –
                   </QuantityButton>
                   <span>{item.quantity ?? 0}</span>
-                  <QuantityButton onClick={() => handleAddOne(item)}>
+                  <QuantityButton
+                    disabled={!item.cartItemId}
+                    onClick={() => handleAddOne(item)}
+                  >
                     +
                   </QuantityButton>
                   <RemoveButton onClick={() => handleRemoveProduct(item)}>
@@ -157,3 +164,4 @@ const Cart = () => {
 };
 
 export default Cart;
+
