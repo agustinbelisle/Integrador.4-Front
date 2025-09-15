@@ -25,7 +25,6 @@ export const addItemToCart = createAsyncThunk(
     try {
       const token = JSON.parse(localStorage.getItem("auth_state"))?.token;
       if (!token || !userId) throw new Error("Usuario no autenticado");
-
       const res = await axios.post(
         `${API_BASE_URL}/cart/${userId}`,
         { productId, quantity },
@@ -175,7 +174,7 @@ const cartSlice = createSlice({
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
         if (!item.product) return;
-        const index = state.cartItems.findIndex((ci) => ci.cartItemId === item.itemId);
+        const index = state.cartItems.findIndex((ci) => ci.productId === item.product.id);
         const newItem = {
           cartItemId: item.itemId,
           productId: item.product.id,
@@ -184,7 +183,6 @@ const cartSlice = createSlice({
           image: item.product.images?.[0]?.url || "placeholder.jpg",
           quantity: item.quantity,
         };
-
         if (index !== -1) state.cartItems[index] = newItem;
         else state.cartItems.push(newItem);
         saveCartToLocalStorage(state.cartItems);
@@ -208,8 +206,13 @@ const cartSlice = createSlice({
   },
 });
 
-export const { addToCartLocal, removeOneItemLocal, removeItemLocal, clearCartLocal } =
-  cartSlice.actions;
+export const {
+  addToCartLocal,
+  removeOneItemLocal,
+  removeItemLocal,
+  clearCartLocal,
+} = cartSlice.actions;
 
 export default cartSlice.reducer;
+
 
