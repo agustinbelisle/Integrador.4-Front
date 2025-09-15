@@ -59,60 +59,69 @@ const Checkout = () => {
   const isCardMethod = paymentMethod === "visa" || paymentMethod === "mastercard";
 
   const handleConfirm = async () => {
-    try {
-      if (isCardMethod) {
-        const errors = await cardFormik.validateForm();
-        cardFormik.setTouched({ number: true, expiry: true, cvc: true });
-        if (Object.keys(errors).length > 0) return;
-      }
-
-      // Crear la orden
-      const orderRes = await fetch(`${API_BASE_URL}/orders/${user.id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!orderRes.ok) throw new Error(await orderRes.text());
-      const order = await orderRes.json();
-
-      // Registrar pago
-      const paymentRes = await fetch(`${API_BASE_URL}/payments/${order.id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ method: paymentMethod }),
-      });
-      if (!paymentRes.ok) throw new Error(await paymentRes.text());
-      const payment = await paymentRes.json();
-
-      // Limpiar carrito
-      dispatch(clearCartRemote({ userId: user.id, token }));
-
-      // Navegar a OrderSuccess con productos incluidos
-      navigate("/order-success", {
-        state: {
-          orderId: order.id,
-          amount: payment.amount,
-          method: payment.method,
-          products: cartItems.map((item) => ({
-            id: item.itemId,
-            name: item.name,
-            quantity: item.quantity,
-            price: item.price,
-            image: item.image,
-          })),
-        },
-      });
-
-    } catch (error) {
-      console.error("Error durante el checkout:", error);
-      alert("Hubo un problema al procesar tu compra. Intenta nuevamente.");
+  try {
+    if (isCardMethod) {
+      const errors = await cardFormik.validateForm();
+      cardFormik.setTouched({ number: true, expiry: true, cvc: true });
+      if (Object.keys(errors).length > 0) return;
     }
-  };
+
+    // Crear la orden
+    const orderRes = await fetch(`${API_BASE_URL}/orders/${user.id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!orderRes.ok) throw new Error(await orderRes.text());
+    const order = await orderRes.json();
+
+    // Registrar pago
+    const paymentRes = await fetch(`${API_BASE_URL}/payments/${order.id}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ method: paymentMethod }),
+    });
+    if (!paymentRes.ok) throw new Error(await paymentRes.text());
+    const payment = await paymentRes.json();
+
+    // Deseleccionar ítems en el backend
+    await fetch(`${API_BASE_URL}/cart/deselect/${user.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // Limpiar carrito
+    dispatch(clearCartRemote({ userId: user.id, token }));
+
+    // Navegar a OrderSuccess con productos incluidos
+    navigate("/order-success", {
+      state: {
+        orderId: order.id,
+        amount: payment.amount,
+        method: payment.method,
+        products: cartItems.map((item) => ({
+          id: item.itemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Error durante el checkout:", error);
+    alert("Hubo un problema al procesar tu compra. Intenta nuevamente.");
+  }
+};
+
 
   return (
     <>

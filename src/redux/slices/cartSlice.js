@@ -4,85 +4,66 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // --- Async thunks ---
-export const fetchCart = createAsyncThunk(
-  "cart/fetchCart",
-  async ({ userId, token }, { rejectWithValue }) => {
-    if (!userId || !token) return [];
-    try {
-      const res = await axios.get(`${API_BASE_URL}/cart/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error al cargar carrito");
-    }
+export const fetchCart = createAsyncThunk("cart/fetchCart", async ({ userId, token }, { rejectWithValue }) => {
+  if (!userId || !token) return [];
+  try {
+    const res = await axios.get(`${API_BASE_URL}/cart/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || "Error al cargar carrito");
   }
-);
+});
 
-export const addItemToCart = createAsyncThunk(
-  "cart/addItemToCart",
-  async ({ userId, productId, quantity }, { rejectWithValue }) => {
-    try {
-      const token = JSON.parse(localStorage.getItem("auth_state"))?.token;
-      if (!token || !userId) throw new Error("Usuario no autenticado");
-      const res = await axios.post(
-        `${API_BASE_URL}/cart/${userId}`,
-        { productId, quantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      return res.data;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error al agregar al carrito");
-    }
+export const addItemToCart = createAsyncThunk("cart/addItemToCart", async ({ userId, productId, quantity }, { rejectWithValue }) => {
+  try {
+    const token = JSON.parse(localStorage.getItem("auth_state"))?.token;
+    if (!token || !userId) throw new Error("Usuario no autenticado");
+    const res = await axios.post(`${API_BASE_URL}/cart/${userId}`, { productId, quantity }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || "Error al agregar al carrito");
   }
-);
+});
 
-export const updateCartItem = createAsyncThunk(
-  "cart/updateCartItem",
-  async ({ itemId, quantity, token }, { rejectWithValue }) => {
-    if (!itemId || !token) return rejectWithValue("Faltan datos para actualizar");
-    try {
-      const res = await axios.put(
-        `${API_BASE_URL}/cart/item/${itemId}`,
-        { quantity },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      return res.data.item;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error al actualizar cantidad");
-    }
+export const updateCartItem = createAsyncThunk("cart/updateCartItem", async ({ itemId, quantity, token }, { rejectWithValue }) => {
+  if (!itemId || !token) return rejectWithValue("Faltan datos para actualizar");
+  try {
+    const res = await axios.put(`${API_BASE_URL}/cart/item/${itemId}`, { quantity }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.data.item;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || "Error al actualizar cantidad");
   }
-);
+});
 
-export const removeItemFromCart = createAsyncThunk(
-  "cart/removeItemFromCart",
-  async ({ itemId, token }, { rejectWithValue }) => {
-    if (!itemId || !token) return rejectWithValue("Faltan datos para eliminar");
-    try {
-      await axios.delete(`${API_BASE_URL}/cart/item/${itemId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return itemId;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error al eliminar item");
-    }
+export const removeItemFromCart = createAsyncThunk("cart/removeItemFromCart", async ({ itemId, token }, { rejectWithValue }) => {
+  if (!itemId || !token) return rejectWithValue("Faltan datos para eliminar");
+  try {
+    await axios.delete(`${API_BASE_URL}/cart/item/${itemId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return itemId;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || "Error al eliminar item");
   }
-);
+});
 
-export const clearCartRemote = createAsyncThunk(
-  "cart/clearCartRemote",
-  async ({ userId, token }, { rejectWithValue }) => {
-    if (!userId || !token) return rejectWithValue("Faltan datos para vaciar");
-    try {
-      await axios.delete(`${API_BASE_URL}/cart/clear/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.message || "Error al vaciar carrito");
-    }
+export const clearCartRemote = createAsyncThunk("cart/clearCartRemote", async ({ userId, token }, { rejectWithValue }) => {
+  if (!userId || !token) return rejectWithValue("Faltan datos para vaciar");
+  try {
+    await axios.delete(`${API_BASE_URL}/cart/clear/${userId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return;
+  } catch (err) {
+    return rejectWithValue(err.response?.data?.message || "Error al vaciar carrito");
   }
-);
+});
 
 // --- Helpers localStorage ---
 const loadCartFromLocalStorage = () => {
@@ -171,13 +152,12 @@ const cartSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
         if (!item.product) return;
         const index = state.cartItems.findIndex((ci) => ci.productId === item.product.id);
         const newItem = {
-          cartItemId: item.itemId, // 👈 este campo es clave
+          cartItemId: item.itemId,
           productId: item.product.id,
           name: item.product.name,
           price: item.product.price,
@@ -188,8 +168,6 @@ const cartSlice = createSlice({
         else state.cartItems.push(newItem);
         saveCartToLocalStorage(state.cartItems);
       })
-
-
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
         const index = state.cartItems.findIndex((ci) => ci.cartItemId === updatedItem.id);
@@ -217,5 +195,3 @@ export const {
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
-
-
