@@ -107,6 +107,7 @@ const Checkout = () => {
           })),
         },
       });
+
     } catch (error) {
       console.error("Error durante el checkout:", error);
       alert("Hubo un problema al procesar tu compra. Intenta nuevamente.");
