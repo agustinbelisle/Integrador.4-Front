@@ -15,12 +15,7 @@ export const fetchCart = createAsyncThunk(
       });
       return res.data;
     } catch (err) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem("user");
-      }
-      return rejectWithValue(
-        err.response?.data?.message || "Error al cargar carrito"
-      );
+      return rejectWithValue(err.response?.data?.message || "Error al cargar carrito");
     }
   }
 );
@@ -39,9 +34,7 @@ export const addItemToCart = createAsyncThunk(
       );
       return res.data;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Error al agregar al carrito"
-      );
+      return rejectWithValue(err.response?.data?.message || "Error al agregar al carrito");
     }
   }
 );
@@ -58,9 +51,7 @@ export const updateCartItem = createAsyncThunk(
       );
       return res.data.item;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Error al actualizar cantidad"
-      );
+      return rejectWithValue(err.response?.data?.message || "Error al actualizar cantidad");
     }
   }
 );
@@ -75,9 +66,7 @@ export const removeItemFromCart = createAsyncThunk(
       });
       return itemId;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Error al eliminar item"
-      );
+      return rejectWithValue(err.response?.data?.message || "Error al eliminar item");
     }
   }
 );
@@ -92,15 +81,12 @@ export const clearCartRemote = createAsyncThunk(
       });
       return;
     } catch (err) {
-      return rejectWithValue(
-        err.response?.data?.message || "Error al vaciar carrito"
-      );
+      return rejectWithValue(err.response?.data?.message || "Error al vaciar carrito");
     }
   }
 );
 
 // --- Helpers localStorage ---
-
 const loadCartFromLocalStorage = () => {
   try {
     const storedCart = localStorage.getItem("cart");
@@ -119,7 +105,6 @@ const saveCartToLocalStorage = (cartItems) => {
 };
 
 // --- Slice ---
-
 const initialState = {
   cartItems: loadCartFromLocalStorage(),
   loading: false,
@@ -133,17 +118,16 @@ const cartSlice = createSlice({
     addToCartLocal: (state, action) => {
       const { product, quantity } = action.payload;
       const existing = state.cartItems.find((item) => item.itemId === product.id);
-      const newItem = {
-        itemId: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.images?.[0]?.url || "placeholder.jpg",
-        quantity,
-      };
       if (existing) {
         existing.quantity += quantity;
       } else {
-        state.cartItems.push(newItem);
+        state.cartItems.push({
+          itemId: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.images?.[0]?.url || "placeholder.jpg",
+          quantity,
+        });
       }
       saveCartToLocalStorage(state.cartItems);
     },
@@ -190,16 +174,19 @@ const cartSlice = createSlice({
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
         if (!item.product) return;
-        const index = state.cartItems.findIndex((ci) => ci.itemId === item.id);
-        const newItem = {
-          itemId: item.id,
-          name: item.product.name,
-          price: item.product.price,
-          image: item.product.images?.[0]?.url || "placeholder.jpg",
-          quantity: item.quantity,
-        };
-        if (index !== -1) state.cartItems[index] = newItem;
-        else state.cartItems.push(newItem);
+        const existingIndex = state.cartItems.findIndex((ci) => ci.itemId === item.id);
+        if (existingIndex !== -1) {
+          // Sumar cantidad si ya existe
+          state.cartItems[existingIndex].quantity += item.quantity;
+        } else {
+          state.cartItems.push({
+            itemId: item.id,
+            name: item.product.name,
+            price: item.product.price,
+            image: item.product.images?.[0]?.url || "placeholder.jpg",
+            quantity: item.quantity,
+          });
+        }
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
