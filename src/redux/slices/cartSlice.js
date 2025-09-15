@@ -35,7 +35,7 @@ export const updateCartItem = createAsyncThunk("cart/updateCartItem", async ({ i
     const res = await axios.put(`${API_BASE_URL}/cart/item/${itemId}`, { quantity }, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return res.data.item;
+    return res.data.item || null; // puede ser null si se eliminó
   } catch (err) {
     return rejectWithValue(err.response?.data?.message || "Error al actualizar cantidad");
   }
@@ -139,7 +139,7 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cartItems = action.payload.map((item) => ({
-          cartItemId: item.id,
+          cartItemId: item.itemId || item.id,
           productId: item.product.id,
           name: item.product?.name || "Producto sin nombre",
           price: item.product?.price || 0,
@@ -170,9 +170,21 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
+        if (!updatedItem || !updatedItem.id) {
+          // Item eliminado, remover localmente
+          state.cartItems = state.cartItems.filter((ci) => ci.cartItemId !== action.meta.arg.itemId);
+          saveCartToLocalStorage(state.cartItems);
+          return;
+        }
         const index = state.cartItems.findIndex((ci) => ci.cartItemId === updatedItem.id);
         if (index !== -1) {
           state.cartItems[index].quantity = updatedItem.quantity;
+          // Opcional: actualizar nombre, precio, imagen si vienen
+          if (updatedItem.product) {
+            state.cartItems[index].name = updatedItem.product.name || state.cartItems[index].name;
+            state.cartItems[index].price = updatedItem.product.price || state.cartItems[index].price;
+            state.cartItems[index].image = updatedItem.product.images?.[0]?.url || state.cartItems[index].image;
+          }
           saveCartToLocalStorage(state.cartItems);
         }
       })
