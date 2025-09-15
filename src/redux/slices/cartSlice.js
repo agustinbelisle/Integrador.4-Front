@@ -4,7 +4,6 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // --- Async thunks ---
-
 export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async ({ userId, token }, { rejectWithValue }) => {
@@ -117,12 +116,13 @@ const cartSlice = createSlice({
   reducers: {
     addToCartLocal: (state, action) => {
       const { product, quantity } = action.payload;
-      const existing = state.cartItems.find((item) => item.itemId === product.id);
+      const existing = state.cartItems.find((item) => item.productId === product.id);
       if (existing) {
         existing.quantity += quantity;
       } else {
         state.cartItems.push({
-          itemId: product.id,
+          cartItemId: null,
+          productId: product.id,
           name: product.name,
           price: product.price,
           image: product.images?.[0]?.url || "placeholder.jpg",
@@ -132,17 +132,17 @@ const cartSlice = createSlice({
       saveCartToLocalStorage(state.cartItems);
     },
     removeOneItemLocal: (state, action) => {
-      const item = state.cartItems.find((i) => i.itemId === action.payload);
+      const item = state.cartItems.find((i) => i.productId === action.payload);
       if (item) {
         item.quantity -= 1;
         if (item.quantity <= 0) {
-          state.cartItems = state.cartItems.filter((i) => i.itemId !== action.payload);
+          state.cartItems = state.cartItems.filter((i) => i.productId !== action.payload);
         }
         saveCartToLocalStorage(state.cartItems);
       }
     },
     removeItemLocal: (state, action) => {
-      state.cartItems = state.cartItems.filter((item) => item.itemId !== action.payload);
+      state.cartItems = state.cartItems.filter((i) => i.productId !== action.payload);
       saveCartToLocalStorage(state.cartItems);
     },
     clearCartLocal: (state) => {
@@ -159,7 +159,8 @@ const cartSlice = createSlice({
       .addCase(fetchCart.fulfilled, (state, action) => {
         state.loading = false;
         state.cartItems = action.payload.map((item) => ({
-          itemId: item.id,
+          cartItemId: item.id,
+          productId: item.product.id,
           name: item.product?.name || "Producto sin nombre",
           price: item.product?.price || 0,
           image: item.product?.images?.[0]?.url || "placeholder.jpg",
@@ -174,31 +175,29 @@ const cartSlice = createSlice({
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
         if (!item.product) return;
-        const existingIndex = state.cartItems.findIndex((ci) => ci.itemId === item.id);
-        if (existingIndex !== -1) {
-          // Sumar cantidad si ya existe
-          state.cartItems[existingIndex].quantity += item.quantity;
-        } else {
-          state.cartItems.push({
-            itemId: item.id,
-            name: item.product.name,
-            price: item.product.price,
-            image: item.product.images?.[0]?.url || "placeholder.jpg",
-            quantity: item.quantity,
-          });
-        }
+        const index = state.cartItems.findIndex((ci) => ci.cartItemId === item.id);
+        const newItem = {
+          cartItemId: item.id,
+          productId: item.product.id,
+          name: item.product.name,
+          price: item.product.price,
+          image: item.product.images?.[0]?.url || "placeholder.jpg",
+          quantity: item.quantity,
+        };
+        if (index !== -1) state.cartItems[index] = newItem;
+        else state.cartItems.push(newItem);
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
-        const index = state.cartItems.findIndex((ci) => ci.itemId === updatedItem.id);
+        const index = state.cartItems.findIndex((ci) => ci.cartItemId === updatedItem.id);
         if (index !== -1) {
           state.cartItems[index].quantity = updatedItem.quantity;
           saveCartToLocalStorage(state.cartItems);
         }
       })
       .addCase(removeItemFromCart.fulfilled, (state, action) => {
-        state.cartItems = state.cartItems.filter((ci) => ci.itemId !== action.payload);
+        state.cartItems = state.cartItems.filter((ci) => ci.cartItemId !== action.payload);
         saveCartToLocalStorage(state.cartItems);
       })
       .addCase(clearCartRemote.fulfilled, (state) => {
@@ -212,3 +211,4 @@ export const { addToCartLocal, removeOneItemLocal, removeItemLocal, clearCartLoc
   cartSlice.actions;
 
 export default cartSlice.reducer;
+

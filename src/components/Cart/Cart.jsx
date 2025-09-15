@@ -41,42 +41,48 @@ const Cart = () => {
     }
   }, [dispatch, isAuthenticated, user, token]);
 
+  // --- Agregar una unidad ---
   const handleAddOne = (item) => {
-  if (isAuthenticated && token && item?.itemId) {
-    dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity + 1, token }));
-  } else {
-    const product = {
-      id: item.product?.id || item.itemId || item.id,
-      name: item.product?.name || item.name,
-      price: item.product?.price || item.price,
-      images: item.product?.images || [{ url: item.image }],
-    };
-    dispatch(addToCartLocal({ product, quantity: 1 }));
-  }
-};
-
-
-  const handleRemoveOne = (item) => {
-  if (isAuthenticated && token && item?.itemId) {
-    if (item.quantity > 1) {
-      dispatch(updateCartItem({ itemId: item.itemId, quantity: item.quantity - 1, token }));
+    if (isAuthenticated && token && item?.cartItemId) {
+      dispatch(
+        updateCartItem({ itemId: item.cartItemId, quantity: item.quantity + 1, token })
+      );
     } else {
-      dispatch(removeItemFromCart({ itemId: item.itemId, token }));
+      const product = {
+        id: item.product?.id || item.productId || item.id,
+        name: item.product?.name || item.name,
+        price: item.product?.price || item.price,
+        images: item.product?.images || [{ url: item.image }],
+      };
+      dispatch(addToCartLocal({ product, quantity: 1 }));
     }
-  } else {
-    dispatch(removeOneItemLocal(item.product?.id || item.itemId || item.id));
-  }
-};
+  };
 
-const handleRemoveProduct = (item) => {
-  if (isAuthenticated && token && item?.itemId) {
-    dispatch(removeItemFromCart({ itemId: item.itemId, token }));
-  } else {
-    dispatch(removeItemLocal(item.product?.id || item.itemId || item.id));
-  }
-};
+  // --- Quitar una unidad ---
+  const handleRemoveOne = (item) => {
+    if (isAuthenticated && token && item?.cartItemId) {
+      if (item.quantity > 1) {
+        dispatch(
+          updateCartItem({ itemId: item.cartItemId, quantity: item.quantity - 1, token })
+        );
+      } else {
+        dispatch(removeItemFromCart({ itemId: item.cartItemId, token }));
+      }
+    } else {
+      dispatch(removeOneItemLocal(item.product?.id || item.productId || item.id));
+    }
+  };
 
+  // --- Eliminar producto ---
+  const handleRemoveProduct = (item) => {
+    if (isAuthenticated && token && item?.cartItemId) {
+      dispatch(removeItemFromCart({ itemId: item.cartItemId, token }));
+    } else {
+      dispatch(removeItemLocal(item.product?.id || item.productId || item.id));
+    }
+  };
 
+  // --- Vaciar carrito ---
   const handleClearCart = () => {
     if (isAuthenticated && token && user?.id) {
       dispatch(clearCartRemote({ userId: user.id, token }));
@@ -86,23 +92,18 @@ const handleRemoveProduct = (item) => {
   };
 
   const handleCheckout = () => {
-    if (isAuthenticated) {
-      navigate("/checkout");
-    } else {
-      navigate("/login", { state: { from: "/checkout" } });
-    }
+    if (isAuthenticated) navigate("/checkout");
+    else navigate("/login", { state: { from: "/checkout" } });
   };
 
   const total = cartItems.reduce(
-    (acc, item) =>
-      acc + ((item.product?.price ?? item.price ?? 0) * (item.quantity || 0)),
+    (acc, item) => acc + ((item.price ?? 0) * (item.quantity ?? 0)),
     0
   );
 
   const getImageUrl = (item) => {
     const url =
       item.product?.images?.[0]?.url ||
-      item.product?.image ||
       item.image ||
       `${IMAGE_BASE_URL}placeholder.jpg`;
     return url.startsWith("http") ? url : IMAGE_BASE_URL + url;
@@ -118,27 +119,22 @@ const handleRemoveProduct = (item) => {
         <>
           <ProductList>
             {cartItems.map((item) => (
-              <ProductItem key={item.id}>
+              <ProductItem key={item.cartItemId || item.productId}>
                 <ProductTopRow>
                   <img
                     src={getImageUrl(item)}
-                    alt={item.product?.name || item.name || "Producto"}
+                    alt={item.name || "Producto"}
                   />
                   <div className="info">
-                    <h3>{item.product?.name || item.name || "Sin nombre"}</h3>
-                    <span>
-                      $
-                      {(item.product?.price ?? item.price ?? 0).toLocaleString(
-                        "es-AR"
-                      )}
-                    </span>
+                    <h3>{item.name || "Sin nombre"}</h3>
+                    <span>${(item.price ?? 0).toLocaleString("es-AR")}</span>
                   </div>
                 </ProductTopRow>
                 <ProductBottomRow>
                   <QuantityButton onClick={() => handleRemoveOne(item)}>
                     -
                   </QuantityButton>
-                  <span>{item.quantity || 0}</span>
+                  <span>{item.quantity ?? 0}</span>
                   <QuantityButton onClick={() => handleAddOne(item)}>
                     +
                   </QuantityButton>
@@ -149,16 +145,10 @@ const handleRemoveProduct = (item) => {
               </ProductItem>
             ))}
           </ProductList>
-          <TotalAmount>
-            Total: ${(total ?? 0).toLocaleString("es-AR")}
-          </TotalAmount>
+          <TotalAmount>Total: ${total.toLocaleString("es-AR")}</TotalAmount>
           <ButtonsRow>
-            <ClearCartButton onClick={handleClearCart}>
-              Vaciar carrito
-            </ClearCartButton>
-            <CheckoutButton onClick={handleCheckout}>
-              Ir al checkout
-            </CheckoutButton>
+            <ClearCartButton onClick={handleClearCart}>Vaciar carrito</ClearCartButton>
+            <CheckoutButton onClick={handleCheckout}>Ir al checkout</CheckoutButton>
           </ButtonsRow>
         </>
       )}
