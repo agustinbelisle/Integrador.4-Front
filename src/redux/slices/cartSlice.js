@@ -175,15 +175,16 @@ const cartSlice = createSlice({
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
         if (!item.product) return;
-        const index = state.cartItems.findIndex((ci) => ci.cartItemId === item.id);
+        const index = state.cartItems.findIndex((ci) => ci.cartItemId === item.itemId);
         const newItem = {
-          cartItemId: item.id,
+          cartItemId: item.itemId,
           productId: item.product.id,
           name: item.product.name,
           price: item.product.price,
           image: item.product.images?.[0]?.url || "placeholder.jpg",
           quantity: item.quantity,
         };
+
         if (index !== -1) state.cartItems[index] = newItem;
         else state.cartItems.push(newItem);
         saveCartToLocalStorage(state.cartItems);
