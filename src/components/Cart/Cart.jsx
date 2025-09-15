@@ -48,6 +48,7 @@ const Cart = () => {
           itemId: item.cartItemId,
           quantity: item.quantity + 1,
           token,
+          userId: user.id,
         })
       );
     } else {
@@ -70,6 +71,7 @@ const Cart = () => {
             itemId: item.cartItemId,
             quantity: item.quantity - 1,
             token,
+            userId: user.id,
           })
         );
       } else {
@@ -164,4 +166,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
 

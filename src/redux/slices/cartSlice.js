@@ -29,17 +29,20 @@ export const addItemToCart = createAsyncThunk("cart/addItemToCart", async ({ use
   }
 });
 
-export const updateCartItem = createAsyncThunk("cart/updateCartItem", async ({ itemId, quantity, token }, { rejectWithValue }) => {
-  if (!itemId || !token) return rejectWithValue("Faltan datos para actualizar");
-  try {
-    const res = await axios.put(`${API_BASE_URL}/cart/item/${itemId}`, { quantity }, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    return res.data.item || null; // puede ser null si se eliminó
-  } catch (err) {
-    return rejectWithValue(err.response?.data?.message || "Error al actualizar cantidad");
+export const updateCartItem = createAsyncThunk(
+  "cart/updateCartItem",
+  async ({ itemId, quantity, token, userId }, { rejectWithValue }) => {
+    if (!itemId || !userId || !token) return rejectWithValue("Faltan datos para actualizar");
+    try {
+      const res = await axios.put(`${API_BASE_URL}/cart/${userId}/item/${itemId}`, { quantity }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data.item || null; // puede ser null si se eliminó
+    } catch (err) {
+      return rejectWithValue(err.response?.data?.message || "Error al actualizar cantidad");
+    }
   }
-});
+);
 
 export const removeItemFromCart = createAsyncThunk("cart/removeItemFromCart", async ({ itemId, token }, { rejectWithValue }) => {
   if (!itemId || !token) return rejectWithValue("Faltan datos para eliminar");
@@ -171,7 +174,6 @@ const cartSlice = createSlice({
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
         if (!updatedItem || !updatedItem.id) {
-          // Item eliminado, remover localmente
           state.cartItems = state.cartItems.filter((ci) => ci.cartItemId !== action.meta.arg.itemId);
           saveCartToLocalStorage(state.cartItems);
           return;
@@ -179,7 +181,6 @@ const cartSlice = createSlice({
         const index = state.cartItems.findIndex((ci) => ci.cartItemId === updatedItem.id);
         if (index !== -1) {
           state.cartItems[index].quantity = updatedItem.quantity;
-          // Opcional: actualizar nombre, precio, imagen si vienen
           if (updatedItem.product) {
             state.cartItems[index].name = updatedItem.product.name || state.cartItems[index].name;
             state.cartItems[index].price = updatedItem.product.price || state.cartItems[index].price;
@@ -207,3 +208,4 @@ export const {
 } = cartSlice.actions;
 
 export default cartSlice.reducer;
+
