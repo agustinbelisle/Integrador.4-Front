@@ -171,12 +171,13 @@ const cartSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
+      
       .addCase(addItemToCart.fulfilled, (state, action) => {
         const item = action.payload;
         if (!item.product) return;
         const index = state.cartItems.findIndex((ci) => ci.productId === item.product.id);
         const newItem = {
-          cartItemId: item.itemId,
+          cartItemId: item.itemId, // 👈 este campo es clave
           productId: item.product.id,
           name: item.product.name,
           price: item.product.price,
@@ -187,6 +188,8 @@ const cartSlice = createSlice({
         else state.cartItems.push(newItem);
         saveCartToLocalStorage(state.cartItems);
       })
+
+
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
         const index = state.cartItems.findIndex((ci) => ci.cartItemId === updatedItem.id);
