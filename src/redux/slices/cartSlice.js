@@ -173,22 +173,28 @@ const cartSlice = createSlice({
       })
       .addCase(updateCartItem.fulfilled, (state, action) => {
         const updatedItem = action.payload;
-        if (!updatedItem || !updatedItem.id) {
-          state.cartItems = state.cartItems.filter((ci) => ci.cartItemId !== action.meta.arg.itemId);
-          saveCartToLocalStorage(state.cartItems);
-          return;
-        }
-        const index = state.cartItems.findIndex((ci) => ci.cartItemId === updatedItem.id);
+        if (!updatedItem) return;
+
+        const updatedId = updatedItem.id || updatedItem.itemId;
+
+        const index = state.cartItems.findIndex(
+          (ci) => ci.cartItemId === updatedId
+        );
+
         if (index !== -1) {
           state.cartItems[index].quantity = updatedItem.quantity;
+          state.cartItems[index].cartItemId = updatedId;
+
           if (updatedItem.product) {
             state.cartItems[index].name = updatedItem.product.name || state.cartItems[index].name;
             state.cartItems[index].price = updatedItem.product.price || state.cartItems[index].price;
-            state.cartItems[index].image = updatedItem.product.images?.[0]?.url || state.cartItems[index].image;
+            state.cartItems[index].image =
+              updatedItem.product.images?.[0]?.url || state.cartItems[index].image;
           }
-          saveCartToLocalStorage(state.cartItems);
         }
+        saveCartToLocalStorage(state.cartItems);
       })
+
       .addCase(removeItemFromCart.fulfilled, (state, action) => {
         state.cartItems = state.cartItems.filter((ci) => ci.cartItemId !== action.payload);
         saveCartToLocalStorage(state.cartItems);
